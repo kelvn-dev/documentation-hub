@@ -20,6 +20,8 @@ RabbitMQ
 
   - Headers Exchange: Routes based on message headers instead of the routing key.
 
+![](images/rabbitmq.png)
+
 ## Comparition with Kafka
 
 - Kafka handles real-time data streams at scale and is designed as a streaming platform, while RabbitMQ is designed as a traditional message broker for messaging between applications
