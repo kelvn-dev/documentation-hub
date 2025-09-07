@@ -1,7 +1,28 @@
 # System design
 
+## OAuth 2.0
+
+What is ?
+- Là authorization framework cho phép user grant 3rd-party limited access tới data của họ nằm trên 1 service hay còn gọi là resource server (nơi host data), mà k cần phải share password trực tiếp
+- Note: OAuth 2.0 is an authorization protocol and NOT an authentication protocol vì bản chất của nó là đi grant access to resource, chứ k phải provide i am
+
+How it works ?
+- Sử dụng access token để grant permission cho client app. Access token có thể có nhiều format, but mostly jwt
+
+Roles
+- Client: 3rd-party client app request access
+- Authorization server: Server that issue access token, For example Auth0
+- Resource server: Server that host data
+- Resource owner: The user own resource
+
+Scopes
+- Specific permission to be granted, for example: read:user
+
+Access token and Authorization code
+- 1 vài authorization server có thể k trực tiếp trả về access token mà trả về authorization code dùng để exchange access token và optionally refresh token, vd như social login bằng gg
+
 ## Auth0
-full flow authentication là user login success thì auth0 là issuer sẽ dựa trên thuật toán bất đối xứng RS256 dùng private key để gen token và trả về, FE dùng token này để request data từ SpringBoot server through restapi, lúc này SpringBoot server là 1 resource server và sẽ verify token bằng cách đi fetch public key từ endpoint JWK (Json web key) Set URI do auth0 cung cấp. Ngoài ra server còn có thể implement thêm các bước validation như issuer, aud, exp, ...
+full flow là user login success thì auth0 là issuer sẽ dựa trên thuật toán bất đối xứng RS256 dùng private key để gen token và trả về, FE dùng token này để request data từ SpringBoot server through restapi, lúc này SpringBoot server là 1 resource server và sẽ verify token bằng cách đi fetch public key từ endpoint JWK (Json web key) Set URI do auth0 cung cấp. Ngoài ra server còn có thể implement thêm các bước validation như issuer, aud, exp, ...
 
 Use case nếu social login ở app B r dùng token để call api ở app A ?
 Flow social login là:

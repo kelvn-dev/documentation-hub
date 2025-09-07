@@ -50,7 +50,7 @@ khi config thread pool trong SpringBoot, nên return DelegatingSecurityContextAs
 - boolean: false
 - char
 
-kiểu dữ liệu tham chiếu k trực tiếp lưu giá trị và lưu địa chỉ bộ nhớ nơi giá trị dc lưu trữ: class, interface, array, enum
+kiểu dữ liệu tham chiếu k trực tiếp lưu giá trị mà lưu địa chỉ bộ nhớ nơi giá trị dc lưu trữ: class, interface, array, enum
 
 autoboxing là chuyển đổi primitive type sang wrapper class: Integer i = 1
 unboxing là chuyển đổi wrapper class sang primitive type: int i = new Integer(1)
@@ -64,10 +64,39 @@ String vs StringBuffer vs StringBuilder:
 ## OOP
 OOP là một phương pháp lập trình phổ biến dựa trên khái niệm quan trọng: class và object
 class sẽ define các thuộc tính và phương thức, là 1 khuôn mẫu của các đối tượng
-- Tính đóng gói: giúp ẩn đi những chi tiết triển khai bên trong và chỉ hiển thị chức năng thông qua 1 giao diện
-- Tính kế thừa: cho phép inherit toàn bộ phương thức và thuộc tính của 1 lớp đã tồn tại -> giúp tái sử dụng code và tạo ra cấu trúc phân cấp
-- Tính đa hình: cho phép perform cùng 1 action trên các đối tượng khác nhau theo các cách khác nhau
-- Tính trừu tượng: cho phép define các lớp và phương thức trừu tượng giúp ẩn đi các chi tiết triển khai bên trong
+- Tính đóng gói (encapsulation): giúp ẩn đi những chi tiết triển khai bên trong và chỉ hiển thị chức năng thông qua 1 giao diện
+- Tính kế thừa (inheritance): cho phép inherit toàn bộ phương thức và thuộc tính của 1 lớp đã tồn tại -> giúp tái sử dụng code và tạo ra cấu trúc phân cấp
+- Tính đa hình (polymorphism): cho phép perform cùng 1 action trên các đối tượng khác nhau theo các cách khác nhau
+- Tính trừu tượng (abstraction): cho phép define các lớp và phương thức trừu tượng giúp ẩn đi các chi tiết triển khai bên trong
+
+```
+abstract class Vehicle {
+    private String brand;   // Encapsulation (đóng gói)
+
+    public Vehicle(String brand) {
+        this.brand = brand;
+    }
+
+    // Getter + Setter (đóng gói)
+    public String getBrand() {
+        return brand;
+    }
+
+    // Abstract method (trừu tượng)
+    abstract void drive();
+}
+
+class Car extends Vehicle {
+    public Car(String brand) {
+        super(brand);
+    }
+
+    @Override
+    void drive() {  // Polymorphism
+        System.out.println(getBrand() + " car is driving on the road.");
+    }
+}
+```
 
 access modifier:
 - public: truy cập ở bất cứ đâu
