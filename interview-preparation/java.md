@@ -1,6 +1,7 @@
 # Java core
 
 ## Scenario Based Interview Questions
+difference between ++num and num++ ? 
 what is the result ?
 ```
 List<Integer> list = Arrays.asList(1, 2, 3);
@@ -10,6 +11,71 @@ for (int i = 0; i < list.size(); ++i) {
     System.out.println(num);
 }
 ```
+
+## SOLID
+Single responsibility
+- Your class or method should have only one responsibility
+- Your class or method should have only one reason to change
+
+Open/Closed Principle
+- A class should be open for extension and closed to modification
+- In simpler term, you should be able to add new functionality to a class without changing its existing code
+=> Avoid introducing bugs to a working application
+
+Liskov’s Substitution Principle
+- A class should be able to be replaced with a subclass without causing any problems like throw exception
+```
+// Incorrect implementation 
+public class Bird {
+    public void fly() {
+        // I can fly
+    }
+
+    public void swim() {
+        // I can swim
+    }
+}
+
+public class Penguin extends Bird {
+
+    // Penguins cannot fly, but we override the fly method and throws Exception => violating LSP
+    @Override
+    public void fly() {
+        throw new UnsupportedOperationException("Penguins cannot fly");
+    }
+}
+
+// Correct implementation
+public class Bird {
+
+    // methods
+}
+
+public interface Flyable {
+    void fly();
+}
+
+public interface Swimmable {
+    void swim();
+}
+
+
+public class Penguin extends Bird implements Swimmable {
+    // Penguins cannot fly, therefore we only implement swim interface
+    @Override
+    public void swim() {
+        System.out.println("I can swim");
+    }
+}
+```
+
+Interface Segregation Principle
+- Larger interfaces should be split into smaller ones
+=> Ensuring that a class is not forced to implement methods it does not need
+
+Dependency Inversion Principle
+- High level modules should not depend on low level modules; both should depend on abstractions
+- Interface (abstraction) should not depend on details (classes should communicate through interface, not implementation)
 
 ## Multi-threading
 Thread là một đơn vị xử lý cơ bản trong hệ thống
@@ -23,7 +89,7 @@ Runnable được prefer vì:
   - Compatible với ThreadPool do work well với ExecutorService
 
 Thread pool dùng để giới hạn số lượng thread cùng 1 thời điểm, bên trong có 1 queue dùng để chứa các task, khi thread nào trống sẽ lấy task trong queue này ra để execute. Vậy bản chất của Thread pool là chuỗi các thread đang chờ để kéo các Runnable trong queue ra để thực hiện theo các phương thức run riêng của chúng.
-
+`
 ![](./images/threadpool.webp)
 
 Callable giống với Runnable nhưng thay vì sử dụng void run thì sử dụng hàm call và có trả về kết quả hoặc throw checked exception. Khi Executor submit 1 callable sẽ trả về Future, call method get để block current thread cho đến khi trả về kqua. Có 1 số nhược điểm như k hỗ trợ built-in exception handling, k bắt được sự kiện sau khi task done, ...
@@ -253,5 +319,3 @@ Fail-fast vs fail-safe:
 Không có khái niệm static class nhưng cho phép define nested static class
 
 Enum is thread-safe
-
-difference between ++num and num++ ? 
