@@ -1,0 +1,3 @@
+how to write an action to reuse like action checkout
+mockito
+convert list to map using stream api, if there is key conflict

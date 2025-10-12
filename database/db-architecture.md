@@ -45,7 +45,7 @@ Problem: when user A update record A from value 0 -> 1 but not commit yet, then 
 
 ### MVCC in Postgresql
 
-When update record A (ctid A) in table A, postgresql insert another record with updated value to that same table, user A will query the old record and other users will query the inserted record. The inserted record will have different ctid that reference ctid A for rollback. ctid is a system column that exists in every table and represents the physical location of a row version
+When update record A (ctid A) in table A, postgresql insert another record with updated value to that same table, user A will query the inseted record and other users will query the old record. The inserted record will have different ctid that reference ctid A for rollback. ctid is a system column that exists in every table and represents the physical location of a row version
 
 ![](images/postgresql-mvcc-implementation.png)
 

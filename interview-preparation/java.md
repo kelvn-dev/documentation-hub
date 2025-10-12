@@ -89,7 +89,7 @@ Runnable được prefer vì:
   - Compatible với ThreadPool do work well với ExecutorService
 
 Thread pool dùng để giới hạn số lượng thread cùng 1 thời điểm, bên trong có 1 queue dùng để chứa các task, khi thread nào trống sẽ lấy task trong queue này ra để execute. Vậy bản chất của Thread pool là chuỗi các thread đang chờ để kéo các Runnable trong queue ra để thực hiện theo các phương thức run riêng của chúng.
-`
+
 ![](./images/threadpool.webp)
 
 Callable giống với Runnable nhưng thay vì sử dụng void run thì sử dụng hàm call và có trả về kết quả hoặc throw checked exception. Khi Executor submit 1 callable sẽ trả về Future, call method get để block current thread cho đến khi trả về kqua. Có 1 số nhược điểm như k hỗ trợ built-in exception handling, k bắt được sự kiện sau khi task done, ...
@@ -119,6 +119,7 @@ khi config thread pool trong SpringBoot, nên return DelegatingSecurityContextAs
 kiểu dữ liệu tham chiếu k trực tiếp lưu giá trị mà lưu địa chỉ bộ nhớ nơi giá trị dc lưu trữ: class, interface, array, enum
 
 autoboxing là chuyển đổi primitive type sang wrapper class: Integer i = 1
+
 unboxing là chuyển đổi wrapper class sang primitive type: int i = new Integer(1)
 
 double và float đều biểu diễn số thực nhưng double biểu diễn chính xác hơn do 8 byte (64 bit), float 4 byte (32 bit)
@@ -186,6 +187,7 @@ public void myMethod() throws IOException, SQLException {
 
 ## Interface
 Interface là một tập hợp các phương thức trừu tượng, có thể có các field nhưng java tự động làm các field này thành static và final
+
 Marker interface là interface k có gì hết, dc dùng để cung cấp thông tin cho JVM, vd như Serializable
 
 vs Abstract class
@@ -195,11 +197,13 @@ vs Abstract class
 
 ## equals vs ==
 == khi dùng với primitive type thì sẽ so sánh giá trị trực tiếp, còn khi dùng với object thì sẽ so sánh tham chiếu (địa chỉ bộ nhớ), nghĩa là check xem 2 biến có cùng tham chiếu đến 1 đối tượng trong bộ nhớ hay k
+
 equals có thể được override so sánh nội dung, vd như String override để so sánh chuỗi => an toàn hơn
 tuy nhiên == có thể được sử dụng cho enum vì mỗi hằng số enum được đảm bảo là duy nhất 
 
 ## Comparable vs Comparator
 Comparable được implement bởi 1 đối tượng để so sánh với 1 đối tượng khác, override phương thức compareTo(Object o)
+
 Comparator được implement để so sánh 2 đối tượng, override phương thức compare(Object o1, Object o2)
 
 ## Process vs Thread
@@ -215,7 +219,7 @@ các interface con và lớp triển khai:
 - List: LinkedList, ArrayList
 - Set: HashSet, TreeSet
 - Queue: ArrayDeQue, PriorityQueue
-- Map: HashMap, TreeMap, ConcurrentMap
+- Map: HashMap, LinkedHashMap, TreeMap
 
 Array vs ArrayList:
 - ArrayList chỉ có thể lưu trữ đối tượng, trong khi Array có thể lưu thêm primitive type
@@ -294,6 +298,9 @@ public class MyClass {
               flag = false;
               break; // Thoát khỏi vòng lặp nội bộ
           }
+      }
+      if (!flag) {
+          break;
       }
   }
   ```
