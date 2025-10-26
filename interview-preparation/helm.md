@@ -29,6 +29,12 @@ Search chart in Artifact Hub
 helm search hub nginx
 ```
 
+Search chart in specified repo
+```
+helm search repo bitnami
+helm search repo bitnami/nginx
+```
+
 Search chart accross all locations:
 ```
 helm search nginx
