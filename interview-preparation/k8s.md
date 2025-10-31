@@ -2,7 +2,7 @@
 
 ## Core
 
-Là 1 open source orchestration giúp tự động hóa deployment, scaling và quản lý các ứng dụng đã dc container hóa
+Là container orchestration giúp tự động hóa deployment, scaling và quản lý các ứng dụng đã dc container hóa
 
 ## Node
 
@@ -124,6 +124,12 @@ rollout history
 k rollout history deployment/nginx-deployment
 ```
 
+## StatefulSets
+
+While Deployments create all pods concurrently, StatefulSets enforce sequential pod creation. When scaling down, Kubernetes terminates the Pods in reverse order: the last Pod is removed first.
+
+However, you can override this behavior by setting the podManagementPolicy to Parallel
+
 ## Service
 
 Service K8s service used to expose pod for internal or external communication
@@ -162,6 +168,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: db
+  namespace: meikocn
 spec:
   type: ClusterIP
   ports:
@@ -170,6 +177,10 @@ spec:
   selector:
     app: db
 ```
+
+Usage:
+- Within the same namespace: simply use the short name 'db'
+- Different namespaces: meikocn.db.svc.cluster.local
 
 ### LoadBalancer
 
@@ -361,8 +372,91 @@ k config get-context
 k config use-context kelvin@minikube
 ```
 
+## Readiness Probes
+
+Life cycle: When a pod is first created, it enters a Pending state while the scheduler selects an appropriate node for placement. After scheduling, the pod transitions to the ContainerCreating state. Once all containers launch successfully, the pod moves into the Running state.
+
+Readiness probes custom pod’s ready condition to determine if it should receive traffic. Consider when scaling up, a new pod might take a minute or more to warm up. Without properly configured readiness probes, traffic could be routed to a pod that isn't fully ready
+
+```
+...
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx
+    readinessProbe:
+      httpGet:
+        path: /api/live
+        port: 8080
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      failureThreshold: 8
+```
+
+- initialDelaySeconds: delay before the first probe
+- periodSeconds: interval between consecutive probe attempts
+- failureThreshold: number of consecutive failures that trigger the pod to be marked as not ready
+
+## Liveness Probes
+
+liveness probe periodically checks the health of application running inside the container. If the probe’s test fails, Kubernetes recreates it to restore service
+
+```
+...
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx
+    livenessProbe:
+      httpGet:
+        path: /api/live
+        port: 8080
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      failureThreshold: 8
+```
+
+## Troubleshooting
+
+Log
+```
+k logs -f nginx-pod
+k logs -f deployment/nginx-deployment
+k logs -f nginx-pod -c nginx-container
+k logs -f nginx-pod --all-containers
+```
+
+Exec
+```
+k exec -it nginx-pod -- /bin/bash
+```
+
+If container does not have a shell, use kubectl debug to attach a new container to a running pod
+```
+k debug -it nginx-pod --target=nginx-container --image=busybox
+```
+
+Forward: create a local tunnel to access internal service (traffic from a specified local port is redirected to the service's port in the cluster)
+```
+k port-forward svc/nginx-service 8000:80
+```
+
+Top: provides real-time CPU and memory usage
+```
+k top pod
+k top node
+```
+
 ## Others
 
 Field	Dockerfile Equivalent	Purpose
 command	ENTRYPOINT	Overrides the default entry point of the image
 args	CMD	Replaces the default arguments passed to the entry point
+
+### Pod Restart Policies
+
+Pod restart behavior is set by the restartPolicy
+
+- Always (default): container will be restarted regardless of whether container terminates with a success or an error
+- Never
+- OnFailure: container will be restarted only if it exits with a non-zero status code
