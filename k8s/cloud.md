@@ -77,6 +77,11 @@ k create secret generic db-secrets \
   --dry-run=client -o yaml > db-secret.yaml
 ```
 
+Install kubeseal CLI (kubeseal recognizes the current k8s context by looking for the kubeconfig, switch contexts using kubectl config commands also make kubeseal respect changes)
+```
+brew install kubeseal
+```
+
 Seal secret
 ```
 kubeseal --controller-namespace meikocn --controller-name meikocn-sealed-secrets -o yaml < db-secret.yaml > db-sealed-secret.yaml
@@ -95,4 +100,55 @@ env:
       secretKeyRef:
         name: db-secrets
         key: password
+```
+
+## Reloader
+
+Using Doppler Kubernetes Operator
+
+Deploy the operator
+```
+helm repo add doppler https://helm.doppler.com
+helm install reloader doppler/doppler-kubernetes-operator
+```
+
+The operator needs permission to fetch secrets from Doppler project -> choose Service token for authentication method (free)
+
+- Dashboard: Project/Config > ⁠Access > ⁠Service Tokens > ⁠Create Service Token
+- Create a Kubernetes secret for the Service Token
+  ```
+  apiVersion: v1
+  kind: Secret
+  metadata:
+    name: doppler-service-token
+    namespace: meikocn
+  stringData:
+    serviceToken: ${token}
+  ```
+
+Define doppler secret crd: where you tell the operator which Doppler project/config to sync secrets from and what to name the resulting Kubernetes ⁠Secret (Doppler can infer the project and config directly from the Service Token)
+```
+apiVersion: secrets.doppler.com/v1alpha1
+kind: DopplerSecret
+metadata:
+  name: meikocn-secrets # name of k8s secret to be created
+  namespace: meikocn
+spec:
+  # reference k8s secret holding doppler service token
+  tokenSecret:
+    name: doppler-service-token
+    namespace: meikocn
+  managedSecret:
+    name: meikocn-secrets # must match metadata.name above
+    namespace: meikocn # must match metadata.namespace above
+```
+
+use Doppler-managed secrets in pods
+```
+env:
+  - name: SERVER_LIVE_MESSAGE
+    valueFrom:
+      secretKeyRef:
+        name: meikocn-secrets
+        key: SERVER_LIVE_MESSAGE
 ```

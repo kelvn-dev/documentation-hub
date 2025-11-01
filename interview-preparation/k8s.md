@@ -372,6 +372,19 @@ k config get-context
 k config use-context kelvin@minikube
 ```
 
+## Sealed secrets
+
+Help encrypting k8s secret for safe storage in public repositories -> can commit encrypted manifests to GitHub without exposing sensitive data. Only cluster where the Sealed Secrets Operator is running can decrypt these manifests back into native Secret objects.
+
+- Sealed Secrets Operator: Watches for SealedSecret CRs and converts them into standard Secrets
+- kubeseal CLI: Encrypts plain Secret manifests into SealedSecret manifests
+- SealedSecret crd
+
+## Reloader
+
+Reloader is controller continuously monitors for modifications in ConfigMaps and Secrets. When a change is detected, it triggers a rolling upgrade, ensuring resources are immediately redeployed
+
+
 ## Readiness Probes
 
 Life cycle: When a pod is first created, it enters a Pending state while the scheduler selects an appropriate node for placement. After scheduling, the pod transitions to the ContainerCreating state. Once all containers launch successfully, the pod moves into the Running state.
