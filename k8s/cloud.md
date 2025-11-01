@@ -49,3 +49,50 @@ config argocd application + sync this application to create pod, service, …
 ## Update pipeline script
 
 Update jenkin or github action script to edit image's tag of meikocn-api pod, then open PR or commit directly to trigger auto-sync in argocd
+
+## Sealed secret
+
+Deploy the Sealed Secrets Operator
+```
+helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
+helm repo update
+helm install meikocn sealed-secrets/sealed-secrets -n meikocn
+```
+
+Fetch the Controller’s Public Key (not mandatory if direct sealing from within the cluster)
+```
+kubeseal \
+  --controller-name=meikocn-sealed-secrets-controller \
+  --controller-namespace=meikocn \
+  --fetch-cert \
+  > meikocn-sealed-secrets-cert.pem
+```
+
+Create a normal secret without applying it
+```
+k create secret generic db-secrets \
+  --from-literal=user=meikocn \
+  --from-literal=password=meikocn \
+  -n meikocn \
+  --dry-run=client -o yaml > db-secret.yaml
+```
+
+Seal secret
+```
+kubeseal --controller-namespace meikocn --controller-name meikocn-sealed-secrets -o yaml < db-secret.yaml > db-sealed-secret.yaml
+```
+
+Reference in Deployment
+```
+env:
+  - name: POSTGRES_USER
+    valueFrom:
+      secretKeyRef:
+        name: db-secrets
+        key: user
+  - name: POSTGRES_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: db-secrets
+        key: password
+```
