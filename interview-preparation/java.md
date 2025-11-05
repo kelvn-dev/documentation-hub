@@ -1,6 +1,8 @@
 # Java core
 
 ## Scenario Based Interview Questions
+
+### Basic
 difference between ++num and num++ ? 
 what is the result ?
 ```
@@ -12,6 +14,92 @@ for (int i = 0; i < list.size(); ++i) {
 }
 ```
 
+Why
+```
+Integer a = 1000;
+Integer b = 1000;
+System.out.println(a == b); // false
+
+Integer x = 1;
+Integer y = 1;
+System.out.println(x == y); // true
+```
+→ Integer is object so compare using '==' is actually checking are these two variables pointing to the exact same object in memory
+
+Java maintains a cache of Integer objects from -128 to 127 because small numbers are used all the time (loops, array indices, counters) → java hands x and y the same cached Integer instance
+
+### Stream API
+convert list to map using stream api, if there is key conflict ?
+
+→ Use merge function
+```
+List<MyObject> list = Arrays.asList(
+    new MyObject("A", 1),
+    new MyObject("B", 2),
+    new MyObject("A", 3) // Duplicate key "A"
+);
+
+Map<String, Integer> map = list.stream()
+    .collect(Collectors.toMap(
+        MyObject::getKey,
+        MyObject::getValue,
+        (existingValue, newValue) -> existingValue // merge function
+    ));
+// Result: {A=1, B=2}
+```
+
+### Multithreading
+
+scenario: one thread that updates the latest price into a field and multiple worker threads just read that value
+```
+private double latestPrice;
+```
+
+one writer, many readers but why workers sometimes read older prices even though a new price is already updated ? 
+
+→ the problem is **visibility**, not concurrency.
+
+Writer thread may update the value only in its CPU cache, and might not push it to main memory immediately. Meanwhile, reader threads may read an older value from their own cache
+
+Java Memory Model doesn’t guarantee visibility unless we use:
+- volatile
+- synchronized
+- Atomic field types
+- ...etc
+
+→ Fix: make the field volatile
+```
+private volatile double latestPrice;
+```
+
+This does two things:
+- Write: forces data to main memory
+- Read: forces CPU to fetch latest value from memory
+
+What internally happens:
+- Before a write → flushes to main memory
+- Before a read → invalidates local cache & re-fetches from main memory
+
+In case not just price, but also another field that must always be consistent (like can’t read a new price but an old timestamp, or vice-versa), 2 separate volatile variables are unsafe because update of price + timestamp is not atomic
+
+→ Define single immutable object
+```
+class PriceData {
+    final double price;
+    final long timestamp;
+    PriceData(double p, long t) {
+        price = p;
+        timestamp = t;
+    }
+}
+```
+Then 
+```
+private volatile PriceData latest;
+```
+
+The object is immutable → so no one can partially modify it
+
 ## SOLID
 Single responsibility
 - Your class or method should have only one responsibility
@@ -20,7 +108,7 @@ Single responsibility
 Open/Closed Principle
 - A class should be open for extension and closed to modification
 - In simpler term, you should be able to add new functionality to a class without changing its existing code
-=> Avoid introducing bugs to a working application
+→ Avoid introducing bugs to a working application
 
 Liskov’s Substitution Principle
 - A class should be able to be replaced with a subclass without causing any problems like throw exception
@@ -38,7 +126,7 @@ public class Bird {
 
 public class Penguin extends Bird {
 
-    // Penguins cannot fly, but we override the fly method and throws Exception => violating LSP
+    // Penguins cannot fly, but we override the fly method and throws Exception → violating LSP
     @Override
     public void fly() {
         throw new UnsupportedOperationException("Penguins cannot fly");
@@ -71,7 +159,7 @@ public class Penguin extends Bird implements Swimmable {
 
 Interface Segregation Principle
 - Larger interfaces should be split into smaller ones
-=> Ensuring that a class is not forced to implement methods it does not need
+→ Ensuring that a class is not forced to implement methods it does not need
 
 Dependency Inversion Principle
 - High level modules should not depend on low level modules; both should depend on abstractions
@@ -94,7 +182,7 @@ Thread pool dùng để giới hạn số lượng thread cùng 1 thời điểm
 
 Callable giống với Runnable nhưng thay vì sử dụng void run thì sử dụng hàm call và có trả về kết quả hoặc throw checked exception. Khi Executor submit 1 callable sẽ trả về Future, call method get để block current thread cho đến khi trả về kqua. Có 1 số nhược điểm như k hỗ trợ built-in exception handling, k bắt được sự kiện sau khi task done, ...
 
-=> CompletableFuture:
+→ CompletableFuture:
 - Task chaining: thenApply(result -> result + 1), thenAccept(result -> logger.info(result))
 - Built-in exception handling: exceptionally()
 - Combine multiple tasks: allOf, anyOf
@@ -198,7 +286,7 @@ vs Abstract class
 ## equals vs ==
 == khi dùng với primitive type thì sẽ so sánh giá trị trực tiếp, còn khi dùng với object thì sẽ so sánh tham chiếu (địa chỉ bộ nhớ), nghĩa là check xem 2 biến có cùng tham chiếu đến 1 đối tượng trong bộ nhớ hay k
 
-equals có thể được override so sánh nội dung, vd như String override để so sánh chuỗi => an toàn hơn
+equals có thể được override so sánh nội dung, vd như String override để so sánh chuỗi → an toàn hơn
 tuy nhiên == có thể được sử dụng cho enum vì mỗi hằng số enum được đảm bảo là duy nhất 
 
 ## Comparable vs Comparator
@@ -261,7 +349,7 @@ Biến instance là attribute của 1 class, được khai báo trong class như
 
 K thể override private, static, final method
 
-java chỉ có thể extend 1 class => k hỗ trợ đa kế thừa do các vấn đề như 2 class có cùng 1 method, instead sử dụng interface
+java chỉ có thể extend 1 class → k hỗ trợ đa kế thừa do các vấn đề như 2 class có cùng 1 method, instead sử dụng interface
 
 Phạm vi sử dụng biến: 
 - biến local: khai báo trong phương thức, truy cập bên trong phương thức đó
