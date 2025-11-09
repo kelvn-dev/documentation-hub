@@ -429,6 +429,103 @@ spec:
       failureThreshold: 8
 ```
 
+## Autoscale
+
+### HPA (Horizontal pod autoscaler)
+
+Manually
+k scale deployment nginx-deployment --replicas=3
+
+HPA Resource Definition
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-deployment-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx-deployment
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
+    - type: Pods
+      pods:
+        metric:
+          name: http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "100"
+    - type: External
+      external:
+        metric:
+          name: newrelic.app.response_time
+        target:
+          type: Value
+          value: "500"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+
+K8s expose 3 metric api types:
+- Resource: metrics.k8s.io
+- Custom: custom.metrics.k8s.io
+- External: external.metrics.k8s.io
+
+By default, native metric server only retrieves CPU and memory. For custom and external metric retrieval, need:
+- Collection Agent: scrapes and stores metrics (Ex: prometheus exporter)
+- Metrics Adapter: translates stored metrics to k8s api (Ex: prometheus adapter)
+HPA will query metrics via api and scale
+
+For custom metric, application itself exposes metrics via library (Ex: Micrometer), while external metric use external metric source to provide data.
+
+Prevents rapid up/down scaling by custom scaling behavior. The above sample allows instant scale-up up to 100% more pods per minute, and delays scale-down by 5 minutes, reducing only 10% per minute
+
+### VPA (Vertical pod autoscaler)
+
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: nginx-deployment-vpa
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx-deployment
+  updatePolicy:
+    updateMode: "Off"         # Only recommendations; no automatic updates
+  resourcePolicy:
+    containerPolicies:
+      - containerName: '*'    # Apply to all containers
+        controlledResources: ["cpu", "memory"]
+        minAllowed:
+          cpu: 100m
+          memory: 100Mi
+        maxAllowed:
+          cpu: 800m
+          memory: 500Mi
+
+updateMode:
+- Off
+- Auto
+- Initial: Apply recommendations on first pod creation
+
 ## Troubleshooting
 
 Log
