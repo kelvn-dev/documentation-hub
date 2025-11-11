@@ -305,11 +305,16 @@ spec:
       storage: 500Mi
 ```
 
+Access Modes:
+- ReadWriteOnce: volume can be mounted as read-write by a single pod or node.
+- ReadWriteMany: volume can be mounted as read-write by multiple pods or nodes.
+- ReadOnlyMany: volume can be mounted as read-only by multiple pods or nodes
+
 ### Reclaim Policies
 
 The reclaim policy determines what happens to a PV when its associated PVC is deleted
 
-- Retain: PV remains available until manually deleted by an administrator
+- Retain (default): PV remains available until manually deleted by an administrator
   ```
   persistentVolumeReclaimPolicy: Retain
   ```
@@ -525,6 +530,31 @@ updateMode:
 - Off
 - Auto
 - Initial: Apply recommendations on first pod creation
+
+## Taints and Tolerations
+
+Taints are applied to nodes to restrict which pods can be scheduled on them. To schedule only certain pods on node, add a toleration to the pod’s definition.
+
+Apply a taint to a node
+kubectl taint nodes minikube project=meikocn:NoSchedule
+
+Add toleration to a pod
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx
+  tolerations:
+    - key: "project"
+      operator: "Equal"
+      value: "meikocn"
+      effect: "NoSchedule"
+
+3 effects:
+- NoSchedule: Pods without the required toleration are not scheduled on the node
+- PreferNoSchedule: The scheduler avoids placing a pod on the node if possible, but it is not strictly enforced
+- NoExecute: New pods that do not tolerate the taint are not scheduled, and existing pods without the toleration are evicted
+
+A taint is automatically applied to the master node
 
 ## Troubleshooting
 
