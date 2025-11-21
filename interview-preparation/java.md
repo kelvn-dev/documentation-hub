@@ -414,3 +414,5 @@ Fail-fast vs fail-safe:
 Không có khái niệm static class nhưng cho phép define nested static class
 
 Enum is thread-safe
+
+is hibernate an interface implementation or vice versa ?
