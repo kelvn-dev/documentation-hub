@@ -12,7 +12,7 @@ A node is a virtual machine where Kubernetes is installed, acting as a worker in
 
   - Các Worker Node là các machines để chạy các Containers (Pods)
 
-### Master node
+### Master node (control plane)
 
 Responsible for control and monitor the cluster’s state
 
@@ -29,6 +29,8 @@ Responsible for control and monitor the cluster’s state
 - Container Runtime: Software such as Docker that runs the containers
 
 - kubelet: An agent that runs on each node, ensuring containers are running as expected
+
+![](./images/k8s-architecture.webp)
 
 ## Pod
 
@@ -188,7 +190,7 @@ LoadBalancer functionality only works on supported cloud platforms. In environme
 
 ## Ingress
 
-Ingress requires:
+Ingress defines rules for routing external HTTP and HTTPS traffic to services within a cluster. It requires:
 
 - Ingress Controller: NGINX, HAProxy, or Traefik
 - Ingress Resources: defines the rules that instruct the Ingress controller on routing incoming requests
