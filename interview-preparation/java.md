@@ -415,4 +415,6 @@ Không có khái niệm static class nhưng cho phép define nested static class
 
 Enum is thread-safe
 
+Mock là để bypass những phần k cần test
+
 is hibernate an interface implementation or vice versa ?
