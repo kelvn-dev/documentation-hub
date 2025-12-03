@@ -1,53 +1,5 @@
 # System design
 
-## OAuth 2.0
-
-What is ?
-- Là authorization framework cho phép user grant 3rd-party limited access tới data của họ nằm trên 1 service hay còn gọi là resource server (nơi host data), mà k cần phải share password trực tiếp
-- Note: OAuth 2.0 is an authorization protocol and NOT an authentication protocol vì bản chất của nó là đi grant access to resource, chứ k phải provide i am
-
-How it works ?
-- Sử dụng access token để grant permission cho client app. Access token có thể có nhiều format, but mostly jwt
-
-Roles
-- Client: 3rd-party client app request access
-- Authorization server: Server that issue access token, For example Auth0
-- Resource server: Server that host data
-- Resource owner: The user own resource
-
-Scopes
-- Specific permission to be granted, for example: read:user
-
-Access token and Authorization code
-- 1 vài authorization server có thể k trực tiếp trả về access token mà trả về authorization code dùng để exchange access token và optionally refresh token, vd như social login bằng gg
-
-## Auth0
-full flow là user login success thì auth0 là issuer sẽ dựa trên thuật toán bất đối xứng RS256 dùng private key để gen token và trả về, FE dùng token này để request data từ SpringBoot server through restapi, lúc này SpringBoot server là 1 resource server và sẽ verify token bằng cách đi fetch public key từ endpoint JWK (Json web key) Set URI do auth0 cung cấp. Ngoài ra server còn có thể implement thêm các bước validation như issuer, aud, exp, ...
-
-Use case nếu social login ở app B r dùng token để call api ở app A ?
-Flow social login là:
-- auth0 redirect tới identity provider login page, vd như gg
-- user login success thì gg sẽ trả về authorization code cho auth0
-- auth0 dùng authorization code để request access token hoặc optionally refresh token và lưu lại
-- auth0 tiếp tục dùng access token này để call api gg lấy user detail, sau đó tự gen token và trả về
-Vậy dùng social login thì token dc trả về vẫn được kí bằng auth0 private key nên token từ app khác k verify được. Còn nếu 2 app dùng cùng 1 auth0 tenant thì validate field aud sẽ chứa clientId của app B chứ k phải app A.
-
-## Docker
-Docker là open source cho phép đóng gói ứng dụng và tất cả các dependency của nó, giúp ứng dụng có thể chạy một cách nhất quán trên nhiều môi trường khác nhau
-- Docker Client: là cli để gửi các lệnh như docker build, docker pull, docker run đến Docker Daemon
-- Docker Daemon: nhận các lệnh từ Docker client và thực hiện các tác vụ
-- Docker registry: là nơi lưu trữ các Docker image. Docker Hub là một registry công cộng phổ biến
-- Docker Objects: Các đối tượng Docker bao gồm Docker images, containers, networks và volumes
-- Docker image: chứa tất cả các thành phần cần thiết để chạy một ứng dụng, được xây dựng từ một file cấu hình gọi là Dockerfile
-- Docker containers: bao gồm các instance đang chạy của Docker images
-
-## Kubernete
-Là 1 open source orchestration giúp tự động hóa deployment, scaling và quản lý các ứng dụng đã dc container hóa. Gồm 2 loại node:
-  - Master Node là trái tim, quản lý toàn bộ cluster.
-  - Các Worker Node là các machines để chạy các Containers (Pods)
-
-Minikube dùng để setup 1 k8s cluster dưới máy local => k cần cloud
-
 ## Design real-time leaderboard (bid car or similar things...) to show top 10 for 1M users
 Challenge: aggregate data by userId and sum scores of each user
 
@@ -55,3 +7,35 @@ Combine websocket, rabbitmq, postgre and redis sorted set
 - Bước 1: save bid data vào postgre db và publish 1 cái message vào queue để update tiền bid xe trong redis sorted set 
 - Bước 2: Sau khi update redis sorted set xong thì tiếp tục publish message cho consumer của bên leaderboard để check leaderboard có thay đổi hay k, nếu có thì cache leaderboard sau khi dc thay đổi và broadcast thay đổi đó tới websocket (dùng STOMP). Ở bước này trước khi check sự thay đổi của leaderboard thì mình có implement 1 cơ chế throttle để quản lý tần số thay đổi leaderboard vì lỡ như 1 giây có 1000 request bid cùng lúc thì k lẽ mình để UI update 1000 lần trong 1s là k hợp lý. Mình check từ thời điểm gần nhất mà leaderboard dc update đến hiện tại phải cách ít nhất nửa giây thì mới check leaderboard có thay đổi hay k.
 - Bước 3: sau khi broadcast thay đổi của leaderboard tới websocket thì FE nhận data từ socket rồi update lại UI thoi
+
+## Distributed lock
+
+Applications often run behind k8s clusters with multiple replicas, so multiple instances may attempt to perform operations on the same resource simultaneously
+
+### Redis-based
+
+Acquire lock: SET lock_key unique_value NX PX expiration_milliseconds
+
+— NX: set key if not exist
+— PX: expiration to prevent deadlocks
+
+Ex: SET payment_lock ca4492e5-6756-4d62-9717-9631982f8b22 NX PX 30000
+
+Release lock: first check if it is still the holder of the lock, then deletes the key using the DEL command
+
+This simple redis lock rely on a single Redis master instance => use Redlock Algorithm:
+
+when a client attempts to acquire the lock, each instance send the SET command and the lock is only considered acquired if client successfully obtains it from a majority of the Redis instances (N/2 + 1)
+
+To simplify the implementation of the Redlock algorithm, use Redisson library
+
+### Zookeper-based
+
+acquire lock: create znode under lock path
+
+release lock: delete znode
+
+Think of the lock path as a lock id
+
+If a client crashes, its znode is auto-deleted, releasing the lock
+

@@ -415,6 +415,8 @@ Không có khái niệm static class nhưng cho phép define nested static class
 
 Enum is thread-safe
 
-Mock là để bypass những phần k cần test
+Mock là để bypass những phần k cần test. sample scenario: When testing the OrderService, you want to verify its logic for different payment outcomes, run test with live payment provider is unreliable => create a mock of the PaymentGateway to control its responses and bypass the actual external communication
 
 is hibernate an interface implementation or vice versa ?
+
+Tomcat is default embedded web server. When run a Spring Boot application, it starts up an instance of Tomcat within the same process. spring-boot-starter-web dependency automatically includes spring-boot-starter-tomcat
