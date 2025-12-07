@@ -5,9 +5,28 @@ Có 2 loại là BeanFactory và ApplicationConext, ApplicationContext thường
 
 spring bean là các đối tượng được quản lý bởi spring container
 
-Scenario Based Interview Questions
+## Liquidbase
 
-## Questions
+use a master changelog file to manage all migrations in one place
+```
+databaseChangeLog:
+  - includeAll:
+      path: db/changelog/migrations/
+```
+
+use command mvn liquibase:diff to generate diff files and it will be located at db/changelog/migrations/changelog.yaml
+
+Then modify it manually if need and rename as 02_add_user_table.yaml for example
+
+Then apply changes: mvn liquidbase:update
+
+For local development we can use liquibase.properties but for other env, inject env var
+
+Note that each time update liquibase.properties or pom.xml file, need to re run mvn clean install
+
+## Scenario Based Interview Questions
+
+### Questions
 1. What is the difference between Spring and Spring Boot?
 2. What is the role of the @SpringBootApplication annotation?
 3. Explain auto-configuration in Spring Boot ?
@@ -29,7 +48,7 @@ Scenario Based Interview Questions
 19. How can you enable request logging in a Spring Boot application?
 20. Composite key
 
-## Answer
+### Answer
 1. What is the difference between Spring and Spring Boot?
 
   Spring là 1 java framework bao gồm nhiều module và thư viện như spring core, spring mvc, spring data, …
