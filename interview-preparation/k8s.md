@@ -97,7 +97,7 @@ spec:
 ### Deployment Strategies
 
 - Recreate Strategy: all existing instances are terminated before the new instances are deployed => causes downtime
-- Rolling Update Strategy: the new version gradually replaces the old version without impacting application availability
+- Rolling Update Strategy: new pod gradually replaces old pod without impacting application availability
 
 If no strategy is specified, Kubernetes defaults to the rolling update strategy
 
@@ -186,7 +186,7 @@ Usage:
 
 ### LoadBalancer
 
-LoadBalancer functionality only works on supported cloud platforms. In environments like VirtualBox or local setups, setting the service type to LoadBalancer will default to NodePort behavior
+It extends the functionality of NodePort by providing external load balancer that routes traffic to the service. LoadBalancer functionality only works on supported cloud platforms. In environments like VirtualBox or local setups, setting the service type to LoadBalancer will default to NodePort behavior
 
 ## Ingress
 
@@ -602,3 +602,23 @@ Pod restart behavior is set by the restartPolicy
 - Always (default): container will be restarted regardless of whether container terminates with a success or an error
 - Never
 - OnFailure: container will be restarted only if it exits with a non-zero status code
+
+### Service mesh
+
+Is infrastructure layer designed to manage service-to-service communications in microservices without requiring modifications to  business code
+
+In traditional microservice, each service has to handle its own routing, security functions. With a service mesh, it uses proxies (sidecars) next to each service to handle networking tasks like traffic routing, load balancing, encryption, and monitoring
+
+### Istio
+
+Istio is an open-source service mesh
+
+Istio's architecture is divided into two main parts: the data plane and the control plane
+- Data Plane: consists of Envoy proxies that are deployed alongside each service (1 proxy is part of the data plane, but the whole network of proxies is the data plane)
+- Control Plane: manages and configures the proxies, allowing to define policies for traffic, security, and observability across the entire mesh
+
+### Sidecar
+
+Within a pod, the primary container runs the core business logic of your application, the sidecar container handle tasks such as monitoring, logging, ... Both share the same network namespace and storage volumes, but they operate in isolated environments
+
+Sidecar is 1 pattern of multi-container pod design pattern

@@ -8,6 +8,12 @@ Combine websocket, rabbitmq, postgre and redis sorted set
 - Bước 2: Sau khi update redis sorted set xong thì tiếp tục publish message cho consumer của bên leaderboard để check leaderboard có thay đổi hay k, nếu có thì cache leaderboard sau khi dc thay đổi và broadcast thay đổi đó tới websocket (dùng STOMP). Ở bước này trước khi check sự thay đổi của leaderboard thì mình có implement 1 cơ chế throttle để quản lý tần số thay đổi leaderboard vì lỡ như 1 giây có 1000 request bid cùng lúc thì k lẽ mình để UI update 1000 lần trong 1s là k hợp lý. Mình check từ thời điểm gần nhất mà leaderboard dc update đến hiện tại phải cách ít nhất nửa giây thì mới check leaderboard có thay đổi hay k.
 - Bước 3: sau khi broadcast thay đổi của leaderboard tới websocket thì FE nhận data từ socket rồi update lại UI thoi
 
+## Deployment strategy
+
+- Blue-Green: Maintain 2 similar environment but different code version, for example Blue with old version and Green with new version. After being tested thoroughly, we can update load balancer or api gateway to route traffic to Green
+- Rolling update: Update each instance until the whole cluster use same new version. This save resource as it does not need to maintain 2 env like Blue-Green. Popular like k8s behavior, update image and k8s will gradually replace old pod with new pod 
+- Others: Canary, AB testing, ...
+
 ## Distributed lock
 
 Applications often run behind k8s clusters with multiple replicas, so multiple instances may attempt to perform operations on the same resource simultaneously
@@ -39,3 +45,32 @@ Think of the lock path as a lock id
 
 If a client crashes, its znode is auto-deleted, releasing the lock
 
+## Saga with inbox/outbox pattern
+
+Saga: Defines what needs to happen (the sequence of steps and compensations).
+Outbox: Ensures how events are published reliably
+Inbox: Ensures how events are consumed reliably (exactly once). 
+
+### Saga pattern (Orchestrator)
+
+A saga is a sequence of local transactions. Each local transaction updates the database and publishes a message or event to trigger the next local transaction. If a transaction fails, saga executes a series of compensating transactions that undo the changes that were made by the preceding transactions.
+
+### Outbox pattern (sender side)
+
+We can’t guarantee the atomicity of the corresponding database transaction and sending of an event, for example, if a service sends the event in the middle of transaction, there is no guarantee that the transaction will commit. Outbox pattern used to solve this dual writes problem.
+
+Application stores event in outbox table instead of sending an event. When a service performs a business action, it writes the event to an outbox table in the same database transaction and a separate process (CDC) reads from this outbox table and publishes the message to a message broker.
+
+### Inbox pattern (receiver side)
+
+Listener receive published message will first save incoming message to its own inbox table, then a background process watch for this inbox table changes and handle the actual business logic
+
+### Summary
+
+Sample full flow: 
+- Update entity as business logic and save event message to outbox table in the same transaction
+- CDC Debezium capture changes in outbox table and publish message to kafka topic
+- Message queue listener receive message will first store event message in inbox table
+- Some process poll inbox table for new message and process it
+
+The Outbox/Inbox patterns provide communication backbone that allows the Saga pattern to orchestrate complex workflows without losing messages or creating data inconsistencies
