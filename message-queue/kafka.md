@@ -22,7 +22,7 @@ Messages stored in Kafka are not deleted once consumed, but are deleted by eithe
 - after a certain time period (time-based retention)
 - reach max message size of partition (size-based retention)
 
-Kafka guarantees ordering within a partition, but not across partitions. If message order matters, must ensure those messages go to the same partition by using a message key
+Kafka guarantees ordering within a partition, but not across partitions. If message order matters, must ensure those messages go to the same partition by using a message key (hash(key) % number_of_partitions)
 
 Offset is an index pointing to the latest consumed message, used to keep a track of which messages have already been consumed. So if a consumer were to go down, this offset value would help us know exactly from where the consumer has to start consuming events
 

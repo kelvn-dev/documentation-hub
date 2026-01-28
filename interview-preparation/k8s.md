@@ -369,6 +369,14 @@ envFrom:
       name: app-secret
 ```
 
+## Sealed secrets
+
+Help encrypting k8s secret for safe storage in public repositories -> can commit encrypted manifests to GitHub without exposing sensitive data. Only cluster where the Sealed Secrets Operator is running can decrypt these manifests back into native Secret objects.
+
+- Sealed Secrets Operator: Watches for SealedSecret CRs and converts them into standard Secrets
+- kubeseal CLI: Encrypts plain Secret manifests into SealedSecret manifests
+- SealedSecret crd
+
 ## Kubeconfig
 
 The kubeconfig file is organized into three primary sections: clusters, users and contexts (Link clusters and users together, Ex: kelvin@minikube)
@@ -378,14 +386,6 @@ k config current-context
 k config get-context
 k config use-context kelvin@minikube
 ```
-
-## Sealed secrets
-
-Help encrypting k8s secret for safe storage in public repositories -> can commit encrypted manifests to GitHub without exposing sensitive data. Only cluster where the Sealed Secrets Operator is running can decrypt these manifests back into native Secret objects.
-
-- Sealed Secrets Operator: Watches for SealedSecret CRs and converts them into standard Secrets
-- kubeseal CLI: Encrypts plain Secret manifests into SealedSecret manifests
-- SealedSecret crd
 
 ## Reloader
 

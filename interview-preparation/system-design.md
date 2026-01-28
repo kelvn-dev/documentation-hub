@@ -1,11 +1,27 @@
 # System design
 
-## Design real-time leaderboard (bid car or similar things...) to show top 10 for 1M users
-Challenge: aggregate data by userId and sum scores of each user
+## Design real-time leaderboard car bidding to show top 10 for 1M users
+Problem statement:
 
-Combine websocket, rabbitmq, postgre and redis sorted set
-- Bước 1: save bid data vào postgre db và publish 1 cái message vào queue để update tiền bid xe trong redis sorted set 
-- Bước 2: Sau khi update redis sorted set xong thì tiếp tục publish message cho consumer của bên leaderboard để check leaderboard có thay đổi hay k, nếu có thì cache leaderboard sau khi dc thay đổi và broadcast thay đổi đó tới websocket (dùng STOMP). Ở bước này trước khi check sự thay đổi của leaderboard thì mình có implement 1 cơ chế throttle để quản lý tần số thay đổi leaderboard vì lỡ như 1 giây có 1000 request bid cùng lúc thì k lẽ mình để UI update 1000 lần trong 1s là k hợp lý. Mình check từ thời điểm gần nhất mà leaderboard dc update đến hiện tại phải cách ít nhất nửa giây thì mới check leaderboard có thay đổi hay k.
+A vehicle bidding platform where users engage in session to bid for car. When a session start, the platform intends to show the top 10 bidders, with their rankings determined by their bidding data on the Leaderboard. System need to be reliable when the marketing team launch some campaigns to like reward secret gift for winner users
+
+Total active users: 50 million
+Daily active users: 10 million
+active users per session: 500k but when marketing team start the campaign, traffic would be higher than usual, maybe 1M
+Leaderboard update frequency: real-time or near real-time
+Data consistency requirement: eventual consistency is acceptable
+Display focus in the user interface: only the top 10 users and their ranks
+
+DB design: PostgreSQL with 2 tables user and user_bidding. The user_bidding table record the bidding data of users (money, timestamp), while the users table holds information related to user profiles. When user bid first time or rebid in the same session, a new record is insert into user_bidding
+
+Redis SortedSet (collection of unique strings ordered by an associated score):
+- Use string as userId and associated score as bidding money
+- Use ZADD command to add a new user with score or update score if already exists (ZADD leaderboard-car123 100 kelvin123). O(log(N)) with N is total number of elements
+- Use ZRANGE command to query. Collection is sorted in ASC default, so we use REV keyword to reverse (ZRANGE leaderboard-car123  0 9  WITHSCORES REV). ZRANGE use zero-based indexes so 0 is the first element. O(log(N)+M) with N is total number of elements and M is number of elements returned.
+
+Serivce interaction design with websocket, rabbitmq, postgre and redis sorted set:
+- Bước 1: save bid data vào postgre db và publish 1 cái message vào queue để update tiền bid xe trong redis sorted set using zadd command
+- Bước 2: Sau khi update redis sorted set xong thì tiếp tục publish message cho consumer của bên leaderboard để check leaderboard có thay đổi hay k using zrange command, nếu có thì cache leaderboard sau khi dc thay đổi và broadcast thay đổi đó tới websocket (dùng STOMP). Ở bước này trước khi check sự thay đổi của leaderboard thì mình có implement 1 cơ chế throttle để quản lý tần số thay đổi leaderboard vì lỡ như 1 giây có 1000 request bid cùng lúc thì k lẽ mình để UI update 1000 lần trong 1s là k hợp lý. Mình check từ thời điểm gần nhất mà leaderboard dc update đến hiện tại phải cách ít nhất nửa giây thì mới check leaderboard có thay đổi hay k.
 - Bước 3: sau khi broadcast thay đổi của leaderboard tới websocket thì FE nhận data từ socket rồi update lại UI thoi
 
 ## Deployment strategy

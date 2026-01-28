@@ -138,3 +138,45 @@ Note that each time update liquibase.properties or pom.xml file, need to re run 
 20. Composite key
 
   in many many relationship, combine annotation @Embeddable with @EmbeddedId
+
+Ways to get correct bean of same type:
+- @Qualifier
+- Field name match bean name
+
+@ConditionalOnProperty: Only create this bean if a specific property exists and/or has a certain value
+
+Spring AOP enable Aspect-Oriented Programming to handle cross-cutting concerns (e.g., logging, security, transaction management) separately from the core business logic. For ex we can write a function to getCurrentUserContext and use @getCurrentUserContext to reuse logic to get current user
+
+## Junit
+@Test: marks a method as a test case
+
+@BeforeEach: A method annotated with @BeforeEach runs before the execution of each test method
+
+@AfterEach: A method annotated with @AfterEach runs after the execution of each test method
+
+Assertions: assertEquals, assertThrows, assertTrue...
+
+## Mockito
+
+@InjectMocks creates an instance of the class and injects all other dependencies marked with @Mock or @Spy into it 
+when().thenReturn() is used to define the behavior of those mocked dependencies
+
+```
+@ExtendWith(MockitoExtension.class)
+class MyServiceTest {
+    @Mock
+    private DependencyRepository repo; // 1. Create a Mock
+
+    @InjectMocks
+    private MyService service; // 2. Inject 'repo' into 'service'
+
+    @Test
+    void testServiceMethod() {
+        // 3. Define behavior
+        when(repo.getData()).thenReturn("Mock Data"); 
+        
+        String result = service.process();
+        assertEquals("Mock Data", result);
+    }
+}
+```

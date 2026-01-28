@@ -343,7 +343,33 @@ Cần chú ý version của class vì thay đổi có thể khiến Deserialize 
 khi khởi tạo 1 biến, java cấp phát bộ nhớ cho nó, khi biến k còn bất kì tham chiếu nào tới, nó có thể được dọn dẹp bởi garbage collector để giải phóng bộ nhớ. Có thể custom thêm behavior trước khi giải phóng bộ nhớ bằng cách override method finalize. Khi 1 biến k còn tham chiếu, nó có thể được dọn dẹp nhưng k phải ngay lập tức, việc dọn lúc nào tùy vào các thuật toán của garbage collector và các yếu tố như bộ nhớ còn lại trong heap, ...
 
 ## Other
-java luon sử dụng Pass by value là copy giá trị của đối tượng rồi chuyền vào param nhưng việc chuyền tham chiếu của đối tượng có thể tạo ra hiệu ứng tương tự như pass by reference
+
+Java is both a compiled and an interpreted language:
+- compile: Java source code (.java file) is first translated into bytecode (.class file) by the javac compiler
+- interpret: JVM acts as an interpreter by translating the bytecode into native machine code at runtime
+
+Java always use pass by value, which is copy value of variable. For object, passed value is copy of reference, so update of object's attribute inside function also take effect outside. This create a similar feeling of pass by reference
+```
+public static void changeName(Person p) {
+    p.name = "Kelvin";
+}
+
+public static void changePerson(Person p) {
+    p = new Person();
+    p.name = "Alice";
+}
+
+public static void main(String[] args) {
+    Person person = new Person();
+    person.name = "John";
+
+    changePerson(person);
+    System.out.println(person.name); // John
+
+    changeName(person);
+    System.out.println(person.name); // Kelvin
+}
+```
 
 Biến instance là attribute của 1 class, được khai báo trong class nhưng ngoài method
 
@@ -417,6 +443,6 @@ Enum is thread-safe
 
 Mock là để bypass những phần k cần test. sample scenario: When testing the OrderService, you want to verify its logic for different payment outcomes, run test with live payment provider is unreliable => create a mock of the PaymentGateway to control its responses and bypass the actual external communication
 
-is hibernate an interface implementation or vice versa ?
+is hibernate an interface implementation or vice versa ? Hibernate is an implementation of JPA specifications that provides the actual code to perform database operations, while JPA defines the rules and interfaces
 
 Tomcat is default embedded web server. When run a Spring Boot application, it starts up an instance of Tomcat within the same process. spring-boot-starter-web dependency automatically includes spring-boot-starter-tomcat
