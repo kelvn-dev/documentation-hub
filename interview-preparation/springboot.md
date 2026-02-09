@@ -1,54 +1,110 @@
 # Spring Boot
 
+## Spring ioc
+
+In a traditional application, we manually create objects and manage their dependencies using the new keyword. This cause tight coupling. With Spring IoC, the control is inverted: the framework takes over the responsibility of object management. Code doesn't create dependencies; instead, the Spring container "injects" them when an object is created. This process is known as Dependency Injection (DI), which is a implementation of the IoC principle
+
 spring container khởi tạo các bean bằng cách quét các annotation, lưu vào container và ở chỗ nào có dependency thì sẽ lấy instance bean trong đó ra để inject vào (singleton).
 Có 2 loại là BeanFactory và ApplicationConext, ApplicationContext thường dc sử dụng nhiều hơn vì nó bao gồm toàn bộ các chức năng của BeanFactory và các chức năng mở rộng như quốc tế hóa (i18), ApplicationEvent, …
 
-spring bean là các đối tượng được quản lý bởi spring container
+Benefits: Decoupling components, which allows developers to focus on writing business logic while the framework handles the boilerplate task of wiring components 
 
-## Liquidbase
+3 DI types:
+- Constructor injection: dependencies are provided through class constructor. Ensures required dependencies are initialized, supports final field for immutability. Best for mandatory dependencies
+- Setter injection: setter method is automatically called to inject by Spring container immediately after a bean instance is initialized. Object in an incomplete state during the short period between its instantiation and the completion of all dependency injections, fields cannot be final because setter require mutable object. Best for optional dependencies
+- Field injection: dependencies are injected directly into fields (@Autowired). Hard to test because require reflection, specifically Mockito must use Java Reflection to break encapsulation, changing the private field's accessibility to public temporarily (Mockito set the value of a field (the mock object) directly on the target object without relying on standard methods like constructors or setters) + cannot final. Best for quick prototyping
 
-use a master changelog file to manage all migrations in one place
+spring bean là các đối tượng được quản lý bởi spring container. Bean scopes:
+- Singleton (default): best for stateless instance like service or repository
+- Prototype: new bean instance is created every time the bean is requested. Best for stateful bean
+- Request, Session, WebSocket: new bean instance is created for each HTTP request, HTTP session, WebSocket session
+- Application: similar to singleton but Application scoped bean is singleton per ServletContext, singleton scoped bean is singleton per ApplicationContext. There can be multiple application contexts for single application
+
+Ways to get correct bean of same type:
+- @Qualifier
+- Field name match bean name
+
+## Spring aop
+
+while spring ioc seperate component dependency, aop seperate concerns
+
+Spring AOP enable Aspect-Oriented Programming to handle cross-cutting concerns (e.g., logging, security, transaction management) separately from the core business logic and allow reusability. 
+For ex, instead of putting the logging code directly in a service function, we create a logging aspect and declare where it should be applied => make the code for this concern reusable and not disrupt business logic
+
+Concepts:
+- Aspect: unit that encapsulates a concern, specifically a class annotated with @Aspect that contains advice and pointcuts
+- Join Point: A specific point during the execution of a program where an action can be applied. In Spring AOP a join point is always the execution of a method
+- Advice: piece of code that you want to execute at a specific point 
+- Pointcut: an expression that tells where to apply a piece of code
+
 ```
-databaseChangeLog:
-  - includeAll:
-      path: db/changelog/migrations/
+@Around("execution(* com.app.service.*.*(..))")
+public Object measureTime(ProceedingJoinPoint joinPoint) throws Throwable {
+    System.out.println("Method: " + joinPoint.getSignature().getName());
+    System.out.println("Args: " + Arrays.toString(joinPoint.getArgs()));
+
+    long start = System.currentTimeMillis();
+    Object result = joinPoint.proceed();
+    System.out.println("Time: " + (System.currentTimeMillis() - start));
+    return result;
+}
 ```
 
-use command mvn liquibase:diff to generate diff files and it will be located at db/changelog/migrations/changelog.yaml
+Here, the advice defines what code runs and when (before the method)
 
-Then modify it manually if need and rename as 02_add_user_table.yaml for example
+Pointcut expression defines which methods are affected: ```execution(* com.app.service.*.*(..))```
 
-Then apply changes: mvn liquidbase:update
+JoinPoint represents the actual runtime context to give details like method name, arguments, ...
 
-For local development we can use liquibase.properties but for other env, inject env var
+JoinPoint → read-only
+ProceedingJoinPoint → used in @Around, allows proceed()
 
-Note that each time update liquibase.properties or pom.xml file, need to re run mvn clean install
+types of Advice:
+
+- Before Advice: Runs before the join point (method execution). It can’t prevent the method from executing, unless it throws an exception.
+
+- After Advice: Runs after the method execution, regardless of the outcome (normal or exception). Example: Cleaning up resources after method execution.
+
+- After Returning Advice: Runs after the method completes normally (no exception thrown). Example: Updating the cache with method return value.
+
+- After Throwing Advice: Runs if the method throws an exception. Example: Logging error details when an exception occurs.
+
+- Around Advice: The most powerful type of advice. It surrounds the method execution. It can modify the method’s input or output, and even prevent the method from being called. Example: Transaction management
+
+Spring AOP is proxy-based AOP implementation in Spring Framework, and it only supports method execution join points, while AspectJ is a comprehensive AOP framework that supports more advanced AOP features
 
 ## Scenario Based Interview Questions
 
-### Questions
-1. What is the difference between Spring and Spring Boot?
-2. What is the role of the @SpringBootApplication annotation?
-3. Explain auto-configuration in Spring Boot ?
-4. How does Spring Boot handle dependency management?
-5. How can you override the default properties in Spring Boot?
-6. Explain the concept of profiles in Spring Boot.
-7. How can you enable a specific profile in Spring Boot?
-8. What is Spring Data JPA
-9. How can you handle exceptions in a Spring Boot application?
-10. How does Spring Boot support database migrations?
-11. What is the role of Spring Boot Actuator?
-12. How can you configure caching in a Spring Boot application?
-13. @Value
-14. @Autowired
-15. What is the purpose of the @Async annotation in Spring Boot?
-16. How can you schedule tasks in a Spring Boot application?
-17. Connection pool
-18. How does Spring Boot support internationalization and localization?
-19. How can you enable request logging in a Spring Boot application?
-20. Composite key
+what if the 3th party provider use different case (like snake_case) for their apis
 
-### Answer
+I wouldn’t change my Java naming conventions but instead handling at the Jackson layer using naming strategy. Specifically, we can use global config or per-dto config to keep internal APIs unaffected. Sample:
+
+application.yml for global
+```
+spring:
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+```
+
+per-dto:
+```
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public class UserDto {
+    private String firstName;
+    private String lastName;
+}
+```
+
+For complex systems, I’d keep third-party DTOs separate from internal models and map between them using Mapstruct to avoid tight coupling
+
+```
+External API DTO (snake_case)
+        ↓
+     Mapper
+        ↓
+Internal Domain Model (camelCase)
+```
+
 1. What is the difference between Spring and Spring Boot?
 
   Spring là 1 java framework bao gồm nhiều module và thư viện như spring core, spring mvc, spring data, …
@@ -60,7 +116,7 @@ Note that each time update liquibase.properties or pom.xml file, need to re run 
 
 3. Explain auto-configuration in Spring Boot ?
 
-  Auto config cho các common component như web framework, security, ... Hoạt động bằng cách analyze classpath và quyết định bean nào được tạo. Nó dựa trên annotation @Conditional để enable hoặc disable các config. 
+  Auto config cho các common component như web framework, security, ... Hoạt động bằng cách analyze classpath và quyết định bean nào được tạo. We can define more config and enable or disable it by using @Conditional or @ConditionalOnProperty (Only create this bean if a specific property exists and/or has a certain value)
 
 4. How does Spring Boot handle dependency management?
 
@@ -139,14 +195,6 @@ Note that each time update liquibase.properties or pom.xml file, need to re run 
 
   in many many relationship, combine annotation @Embeddable with @EmbeddedId
 
-Ways to get correct bean of same type:
-- @Qualifier
-- Field name match bean name
-
-@ConditionalOnProperty: Only create this bean if a specific property exists and/or has a certain value
-
-Spring AOP enable Aspect-Oriented Programming to handle cross-cutting concerns (e.g., logging, security, transaction management) separately from the core business logic. For ex we can write a function to getCurrentUserContext and use @getCurrentUserContext to reuse logic to get current user
-
 ## Junit
 @Test: marks a method as a test case
 
@@ -180,3 +228,22 @@ class MyServiceTest {
     }
 }
 ```
+
+## Liquidbase
+
+use a master changelog file to manage all migrations in one place
+```
+databaseChangeLog:
+  - includeAll:
+      path: db/changelog/migrations/
+```
+
+use command mvn liquibase:diff to generate diff files and it will be located at db/changelog/migrations/changelog.yaml
+
+Then modify it manually if need and rename as 02_add_user_table.yaml for example
+
+Then apply changes: mvn liquidbase:update
+
+For local development we can use liquibase.properties but for other env, inject env var
+
+Note that each time update liquibase.properties or pom.xml file, need to re run mvn clean install
