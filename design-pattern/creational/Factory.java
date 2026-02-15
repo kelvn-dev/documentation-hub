@@ -20,7 +20,7 @@ class PaypalPaymentProcessor implements PaymentProcessor {
 
 
 /**
- * Factory Method is a creational design pattern that provides a solution to create objects without the need to specify their concrete classes
+ * Factory Method is a creational design pattern that provides a solution to create objects without specifying their concrete classes
  */
 class PaymentProcessorFactory {
     private final CreditCardPaymentProcessor creditCardPaymentProcessor;

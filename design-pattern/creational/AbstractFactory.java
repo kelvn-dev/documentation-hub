@@ -1,46 +1,38 @@
 /**
- * Factory Classes
+ * Abstract Factory
  */
-interface ProductFactory {
-    Product createProduct();
+interface GUIFactory {
+    Button createButton();
+    Checkbox createCheckbox();
 }
 
-class ProductAFactory implements ProductFactory{
-    @Override
-    public Product createProduct() {
-        return new ProductA();
+/**
+ * Concrete Factories
+ */
+class WindowsFactory implements GUIFactory {
+    public Button createButton() {
+        return new WindowsButton();
     }
-}
-
-class ProductBFactory implements ProductFactory{
-    @Override
-    public Product createProduct() {
-        return new ProductB();
+    public Checkbox createCheckbox() {
+        return new WindowsCheckbox();
     }
 }
 
 /**
- * Product Classes
+ * Interfaces
  */
-interface Product {
-    String getName();
-}
+interface Button {}
+interface Checkbox {}
 
-class ProductA implements Product {
+/**
+ * Concrete implementations
+ */
+class WindowsButton implements Button {}
+class WindowsCheckbox implements Checkbox {}
 
-    @Override
-    public String getName() {
-        return "Product A";
-    }
-}
+class MacButton implements Button {}
+class MacCheckbox implements Checkbox {}
 
-class ProductB implements Product {
-
-    @Override
-    public String getName() {
-        return "Product B";
-    }
-}
 
 /**
  * Abstract Factory is a creational design pattern that provides a solution to create groups of related objects without specifying their concrete classes
@@ -49,14 +41,8 @@ class ProductB implements Product {
  */
 public class AbstractFactory {
     public static void main(String[] args) {
-        // Create Product A using ProductAFactory
-        ProductFactory productAFactory = new ProductAFactory();
-        Product productA = productAFactory.createProduct();
-        System.out.println("Product A: " + productA.getName());
-
-        // Create Product B using ProductBFactory
-        ProductFactory productBFactory = new ProductBFactory();
-        Product productB = productBFactory.createProduct();
-        System.out.println("Product B: " + productB.getName());
+        GUIFactory windowsFactory = new WindowsFactory();
+        Button windowsButton = windowsFactory.createButton();
+        Checkbox windowsCheckbox = windowsFactory.createCheckbox();
     }
 }

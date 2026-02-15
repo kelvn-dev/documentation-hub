@@ -105,6 +105,12 @@ External API DTO (snake_case)
 Internal Domain Model (camelCase)
 ```
 
+## Other
+
+Why does POST send 2 requests ?
+
+because browser send preflight OPTION request before the actual request to confirm whether the intended request is permitted
+
 1. What is the difference between Spring and Spring Boot?
 
   Spring là 1 java framework bao gồm nhiều module và thư viện như spring core, spring mvc, spring data, …

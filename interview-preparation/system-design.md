@@ -30,6 +30,34 @@ Serivce interaction design with websocket, rabbitmq, postgre and redis sorted se
 - Rolling update: Update each instance until the whole cluster use same new version. This save resource as it does not need to maintain 2 env like Blue-Green. Popular like k8s behavior, update image and k8s will gradually replace old pod with new pod 
 - Others: Canary, AB testing, ...
 
+## Caching strategy
+
+3 level caching: client, server, db (Frequently queried db results)
+
+below 'db' actually represent underlying storage, not restrict to only db but maybe data from 3th party
+
+- Cache-Aside (lazy loading): application checks the cache first; if data is missing, it fetches it from db, updates the cache, and returns it. Ideal for read-heavy applications because cache always miss first request but rarely for later request
+- Least Recently Used (LRU): evicting the one that hasn't been used for the longest time (requires usage tracking) prioritizing frequently accessed data to improve hit rates
+- Most Recently Used (MRU): evicting the one that has been used most recently (requires usage tracking)
+- First-In-First-Out (FIFO): evicts the oldest data added to the cache, regardless of how often it is accessed
+- Random Replacement: randomly selects an item for eviction (simple but not optimal)
+
+caching invalidation strategies (removes or updates cache entries when the corresponding data in db changes)
+- Write-Through: data is written to both the cache and db almost simultaneously (cache is always up-to-date but increase write latency)
+
+  ![](./images/caching-write-through.png)
+- Write-Back: data is written to cache immediately, and the update to db is deferred (reduces write latency but risk of data loss)
+
+  ![](./images/caching-write-back.png)
+
+## Forward proxy vs reverse proxy
+
+![](./images/proxy.webp)
+
+Forward proxy is a server that sits between client and the internet, it's typically used to control access to the internet
+
+Reverse proxy is a server that sits between client and origin server
+
 ## Distributed lock
 
 Applications often run behind k8s clusters with multiple replicas, so multiple instances may attempt to perform operations on the same resource simultaneously
