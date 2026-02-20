@@ -20,11 +20,13 @@ RabbitMQ
 
   - Headers Exchange: Routes based on message headers instead of the routing key.
 
+- when multiple consumers subscribe to the same queue, messages are distributed among them so that each message is processed by only one consumer
+
 ![](images/rabbitmq.png)
 
 ## Comparition with Kafka
 
-- Kafka handles real-time data streams at scale and is designed as a streaming platform, while RabbitMQ is designed as a traditional message broker for messaging between applications
-
-- For use cases that require low latency and high throughput, Kafka is a better choice, whereas for use cases where reliability and message durability are critical, RabbitMQ is a better choice.
+Both are message broker but designed for different usecases
+Kafka is optimized for high-throughput by using partitions and consumer groups to scales horizontally. It’s ideal for event streaming and systems that require message replay.
+RabbitMQ is a traditional message broker that's good for a system that require complex message routing by using different exchange types and bindings. It’s better suited for task queues and routing-heavy use cases
 

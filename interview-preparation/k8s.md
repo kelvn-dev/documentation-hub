@@ -72,6 +72,8 @@ spec:
 
 ## Deployment
 
+Deployment ensure the right number of running pod. It supports zero-downtime rolling updates. It also maintains revision history, allowing instant rollback to a previous stable version if the rollout fails
+
 ```
 apiVersion: apps/v1
 kind: Deployment
@@ -131,6 +133,10 @@ k rollout history deployment/nginx-deployment
 While Deployments create all pods concurrently, StatefulSets enforce sequential pod creation. When scaling down, Kubernetes terminates the Pods in reverse order: the last Pod is removed first.
 
 However, you can override this behavior by setting the podManagementPolicy to Parallel
+
+## DeamonSet
+
+Runs 1 pod on every matching node. Usually used for logging or monitoring agents
 
 ## Service
 
