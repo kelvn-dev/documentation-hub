@@ -346,7 +346,11 @@ Thread pool dùng để giới hạn số lượng thread cùng 1 thời điểm
 
 ![](./images/threadpool.webp)
 
-Callable giống với Runnable nhưng thay vì sử dụng void run thì sử dụng hàm call và có trả về kết quả hoặc throw checked exception. Khi Executor submit 1 callable sẽ trả về Future, call method get để block current thread cho đến khi trả về kqua. Có 1 số nhược điểm như k hỗ trợ built-in exception handling, k bắt được sự kiện sau khi task done, ...
+Callable giống với Runnable nhưng thay vì sử dụng void run thì sử dụng hàm call và có trả về kết quả hoặc throw checked exception.
+
+Never create raw thread with `new Thread()` in production, always use ExecutorService for threadpool.
+
+Khi Executor submit 1 callable sẽ trả về Future, call method get để block current thread cho đến khi trả về kqua. Có 1 số nhược điểm như k hỗ trợ built-in exception handling, k bắt được sự kiện sau khi task done, ...
 
 → CompletableFuture:
 - Task chaining: thenApply(result -> result + 1), thenAccept(result -> logger.info(result))
@@ -356,6 +360,38 @@ Callable giống với Runnable nhưng thay vì sử dụng void run thì sử d
 Base interface là Executor
 
 khi config thread pool trong SpringBoot, nên return DelegatingSecurityContextAsyncTaskExecutor để thread có security context
+
+### Lifecycle
+
+NEW → RUNNABLE → (BLOCKED/WAITING/TIMED_WAITING) → TERMINATED
+- NEW: Thread is created `new Thread()`, but `start()` not called yet
+- RUNNABLE: After calling `start()`. Thread is ready or running (JVM scheduler decides).
+- BLOCKED: Waiting to acquire a lock, for example entering a `synchronized` block
+- WAITING: Waiting for another thread to perform an action, for example `sleep()`, `wait()`, `join()`
+- TERMINATED: `run()` method finished or thread died due to exception
+
+### synchronized vs ReentrantLock
+
+- synchronized is built-in, automatically acquires lock when enter block and releases lock when exit block 
+- ReentrantLock from java.util.concurrent.locks, must manually lock() and unlock(), support advanced features like timeout
+
+```
+synchronized (this) {
+    // only 1 thread at a time
+}
+
+Lock lock = new ReentrantLock();
+lock.lock();
+try {
+    // task
+} finally {
+    lock.unlock();
+}
+```
+
+### synchronized vs volatile
+
+volatile only guarantee visibility, while synchronized guarantee visibility and atomicity
 
 ## Other
 
