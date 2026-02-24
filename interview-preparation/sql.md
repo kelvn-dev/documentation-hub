@@ -100,9 +100,6 @@ delete FROM employee WHERE id IN (
 
 → ROW_NUMBER() assigns a unique, sequential integer to every row, ignoring ties, while DENSE_RANK() assigns the same rank to ties and never leaves gaps in the ranking sequence. RANK() is similar to DENSE_RANK() but create gap ((e.g., 1, 2, 2, 4))
 
-## Index
-Cơ chế hoạt động của hash index: khi lưu record, dùng hàm băm để tính giá trị băm của primary key sau đó lưu vào bảng băm. Bảng băm cho phép truy cập nhanh đến địa chỉ lưu trữ của bản ghi thực tế
-
 ## Other
 bảng tạm bảng dc sinh ra để lưu kết quả tạm trong quá trình thực hiện 1 câu truy vấn
 

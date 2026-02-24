@@ -58,6 +58,18 @@ Forward proxy is a server that sits between client and the internet, it's typica
 
 Reverse proxy is a server that sits between client and origin server
 
+## Partitioning vs sharding
+
+Partitioning splits a large table into smaller pieces inside the same database instance, while sharding splits data across multiple database servers. Although sharding scale horizontally, it add complexity for cross-shard joins or distributed transaction
+
+## Memory profiling
+
+Memory profiling is analyzing heap usage, object allocation, and garbage collection behavior to detect memory leaks and performance issues. In springboot, we can use tools like Java Flight Recorder or Actuator metrics to monitor JVM memory
+
+## Distributed tracing
+
+Distributed tracing tracks a request across multiple microservices using trace IDs and spans. Span represents a single operation (HTTP request = 1 span, DB query = 1 span), while a trace is a collection of spans that represent entire request journey
+
 ## Distributed lock
 
 Applications often run behind k8s clusters with multiple replicas, so multiple instances may attempt to perform operations on the same resource simultaneously

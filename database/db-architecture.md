@@ -4,9 +4,20 @@ MVCC, Query optimizer, Lock, ...
 
 ## Backup and restore data
 
-- Before any changes are applied to the main database files on disk (datafile), they are first recorded in an append-only log called the WAL (event not commit yet) => Write to wal sequentially
+- Before any changes are applied to the main datafile on disk, they are first recorded in an append-only log called the WAL (event not commit yet) => Write to wal sequentially
 - Apply log: After db is up again, it will search for wal and update until the latest status
 - Undo: Use rollback information to undo uncommited data
+
+## Index
+
+- B+ Tree Index (default): use balanced tree structure that support equality, range query and ORDER BY
+- Hash Index: use hash table so good for equality but not range query
+- Unique Index: ensures no duplicate values
+- Composite Index: index on multiple columns to optimize query filtering on multiple fields
+- Full-Text Index: optimized for text search
+- Bitmap Index: for low-cardinality columns like status or region
+- Partial Index: Index only a subset of rows to reduces index size and improves performance
+  (`CREATE INDEX idx_active_users ON users(email) WHERE active = true;`)
 
 ## Lock
 
@@ -80,3 +91,36 @@ When user execute a query statement, there are 6 steps:
 - Execute it
 
 => This why when we update db's version, same query in same context can be faster, just because the query optimizer to analyze execution plan has been improved
+
+## Strategies for scaling
+
+For read-heavy system like chatgpt, utilize master-slave and config the master run in high-availability mode with a hot standby that is always ready to take over serving traffic if the primary down. 
+
+To avoid situation where low-priority workload becomes resource-intensive that can affect performance of high-priority requests on the same instances, split requests into low-priority and high-priority tiers and route them to separate instances. The implementation can be at application-level by using use a routing DataSource to dynamically select the correct replica
+
+Implement cache locking mechanism so that when multiple requests miss on the same cache key, only one request retrieve data and rebuild the cache, all other requests wait for the cache
+
+HikariCP is application-level pool, which manage connections per application instance, for example 10 pods × 20 connections = 200 DB connections, so scaling pods increases DB connections linearly.
+
+Utilize PgBouncer as a proxy layer (sits between application and PostgreSQL) to pool database connections centrally, for example 10 pods can share 50 real DB connections. Much better for high scalable system but add a network layer, while hikari is extremely fast because in-memory.
+
+Best practice is using both. HikariCP manages thread inside each instance, while PgBouncer protects database
+
+## Anti-Patterns
+
+### Long-Lived transactions
+
+Better patterns:
+- In app code, use short transactions (open as late as possible, close as early as possible) and avoid doing network calls like HTTP inside a database transaction
+- Make sure connection pools have idle_in_transaction_session_timeout set
+
+### Hotspot rows
+
+One table. One row. Everyone updates it, for example using a row as counter
+
+```
+UPDATE metrics SET pageviews = pageviews + 1 WHERE id = 1;
+```
+
+Better patterns:
+- append-only by using `insert` and aggregate later
