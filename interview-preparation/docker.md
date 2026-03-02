@@ -2,13 +2,13 @@
 
 ## Core
 
-Docker là open source cho phép đóng gói ứng dụng và tất cả các dependency của nó, giúp ứng dụng có thể chạy một cách nhất quán trên nhiều môi trường khác nhau
+Docker is an open source that allow to package application and all dependencies into an image, and we can use this image to run it consistently in different environments
 
 ## Components
 
-- Docker Client: là cli để gửi các lệnh như docker build, docker pull đến Docker Daemon
-- Docker Daemon: nhận các lệnh từ Docker client và thực hiện các tác vụ
-- Docker Objects: Các đối tượng Docker bao gồm Docker images, containers, networks và volumes
+- Docker Client: cli that send commands like docker build, docker pull to Docker Daemon
+- Docker Daemon: receive commands from Docker client and perform action
+- Docker Objects: like Docker images, containers, networks và volumes
 
 Docker Engine is the runtime that builds and runs containers. It includes the Docker daemon, REST API, and CLI
 

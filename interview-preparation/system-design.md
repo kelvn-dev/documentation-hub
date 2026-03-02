@@ -50,6 +50,16 @@ caching invalidation strategies (removes or updates cache entries when the corre
 
   ![](./images/caching-write-back.png)
 
+## Message queue vs pub-sub vs message broker
+
+Message queue is point-to-point messaging pattern, producer send 1 message to 1 queue and multiple consumer compete to consume it only once. For example, aws sqs or rabbitmq with queue mode
+
+Pub-sub is broadcast messaging pattern, publisher send 1 message to 1 topic and multiple subscribers receive a copy. For example, redis pub-sub, gg pub-sub, consumer group in kafka
+
+Message broker is software system that implements messaging patterns like message queue, pub-sub, routing, retry, ... For example, rabbitmq, kafka, pulsar
+
+So both message queue and pub-sub are messaging patterns, while a message broker is the system that implements those patterns
+
 ## Forward proxy vs reverse proxy
 
 ![](./images/proxy.webp)
@@ -62,9 +72,31 @@ Reverse proxy is a server that sits between client and origin server
 
 Partitioning splits a large table into smaller pieces inside the same database instance, while sharding splits data across multiple database servers. Although sharding scale horizontally, it add complexity for cross-shard joins or distributed transaction
 
+## Process vs Thread
+
+A process is an independent program with its own memory, while a thread is an execution unit inside a process. So a process can contain multiple threads and they share memory
+
+## Context switching
+
+When the number of thread is larger than number of cpu, os need to do context switching, which is save state of thread A, restore state of thread B and resume execution, so it's actually time-slice but very fast that we feel like parallel.
+
+Too many threads may reduce performance because it spends more time switching than doing real work
+
+For cpu task like resize an image, sort a large array of data or do a complex calculation, number of thread shouldn't exceed number of cpu because cpi is always busy
+
+For IO task like db call or api call, number of thread can larger than number of cpu because cpu is idle during waiting for external resources
+
 ## Memory profiling
 
 Memory profiling is analyzing heap usage, object allocation, and garbage collection behavior to detect memory leaks and performance issues. In springboot, we can use tools like Java Flight Recorder or Actuator metrics to monitor JVM memory
+
+## Race condition
+
+When multiple threads modify shared data without proper synchronization
+
+## Deadlock
+
+When two or more threads hold locks and wait for each other forever
 
 ## Distributed tracing
 

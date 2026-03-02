@@ -4,8 +4,9 @@
 
 In a traditional application, we manually create objects and manage their dependencies using the new keyword. This cause tight coupling. With Spring IoC, the control is inverted: the framework takes over the responsibility of object management. Code doesn't create dependencies; instead, the Spring container "injects" them when an object is created. This process is known as Dependency Injection (DI), which is a implementation of the IoC principle
 
-spring container khởi tạo các bean bằng cách quét các annotation, lưu vào container và ở chỗ nào có dependency thì sẽ lấy instance bean trong đó ra để inject vào (singleton).
-Có 2 loại là BeanFactory và ApplicationConext, ApplicationContext thường dc sử dụng nhiều hơn vì nó bao gồm toàn bộ các chức năng của BeanFactory và các chức năng mở rộng như quốc tế hóa (i18), ApplicationEvent, …
+spring container init bean by scanning annotation, store in container and wherever need dependency, it inject instance bean from container to
+
+2 type of container, BeanFactory and ApplicationConext, ApplicationContext is prefer because it include all BeanFactory's features and some more like ApplicationEvent or i18
 
 Benefits: Decoupling components, which allows developers to focus on writing business logic while the framework handles the boilerplate task of wiring components 
 
@@ -111,6 +112,10 @@ Why does POST send 2 requests ?
 
 because browser send preflight OPTION request before the actual request to confirm whether the intended request is permitted
 
+is hibernate an interface implementation or vice versa ? Hibernate is an implementation of JPA specifications that provides the actual code to perform database operations, while JPA defines the rules and interfaces
+
+Tomcat is default embedded web server. When run a Spring Boot application, it starts up an instance of Tomcat within the same process. spring-boot-starter-web dependency automatically includes spring-boot-starter-tomcat
+
 1. What is the difference between Spring and Spring Boot?
 
   Spring là 1 java framework bao gồm nhiều module và thư viện như spring core, spring mvc, spring data, …
@@ -211,6 +216,8 @@ because browser send preflight OPTION request before the actual request to confi
 Assertions: assertEquals, assertThrows, assertTrue...
 
 ## Mockito
+
+Mock used to bypass what not need to test. Sample scenario: When testing the OrderService, you want to verify its logic for different payment outcomes, but run test with live payment provider is unreliable, so create a mock of the PaymentGateway to control its responses and bypass the actual external communication
 
 @InjectMocks creates an instance of the class and injects all other dependencies marked with @Mock or @Spy into it 
 when().thenReturn() is used to define the behavior of those mocked dependencies

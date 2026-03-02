@@ -72,13 +72,7 @@ Java Memory Model doesn’t guarantee visibility unless we use:
 private volatile double latestPrice;
 ```
 
-This does two things:
-- Write: forces data to main memory
-- Read: forces CPU to fetch latest value from memory
-
-What internally happens:
-- Before a write → flushes to main memory
-- Before a read → invalidates local cache & re-fetches from main memory
+volatile used to mark a variable as it can be modified by different threads at the same time, so write operation will force data to main memory and read operation will force CPU to fetch latest value from memory
 
 In case not just price, but also another field that must always be consistent (like can’t read a new price but an old timestamp, or vice-versa), 2 separate volatile variables are unsafe because update of price + timestamp is not atomic
 
@@ -162,13 +156,55 @@ Interface Segregation Principle
 → Ensuring that a class is not forced to implement methods it does not need
 
 Dependency Inversion Principle
-- High level modules should not depend on low level modules; both should depend on abstractions
-- Interface (abstraction) should not depend on details (classes should communicate through interface, not implementation)
+
+Violates DIP
+```
+class MySQLDatabase {
+    public void save(String data) {
+        System.out.println("Saving to MySQL");
+    }
+}
+
+class UserService {
+    private MySQLDatabase database = new MySQLDatabase();
+
+    public void saveUser(String user) {
+        database.save(user);
+    }
+}
+```
+
+Follows DIP
+```
+interface Database {
+    void save(String data);
+}
+
+class MySQLDatabase implements Database {
+    public void save(String data) {
+        System.out.println("Saving to MySQL");
+    }
+}
+
+class UserService {
+    private final Database database;
+
+    public UserService(Database database) {
+        this.database = database;
+    }
+
+    public void saveUser(String user) {
+        database.save(user);
+    }
+}
+```
+
+high-level modules shouldn't depend on concrete implementations, instead it should depend on abstractions to reduces coupling
 
 ## Data type
-2 loại kiểu dữ liệu chính:
+2 primary data types:
 
-8 kiểu dữ liệu nguyên thủy
+8 primitive data type:
 - byte (0)
 - int
 - long
@@ -178,25 +214,26 @@ Dependency Inversion Principle
 - boolean: false
 - char
 
-kiểu dữ liệu tham chiếu k trực tiếp lưu giá trị mà lưu địa chỉ bộ nhớ nơi giá trị dc lưu trữ: class, interface, array, enum
+reference data type not store value directly but store memory address where value is stored: class, interface, array, enum
 
-autoboxing là chuyển đổi primitive type sang wrapper class: Integer i = 1
+autoboxing is transform primitive type to wrapper class: Integer i = 1
 
-unboxing là chuyển đổi wrapper class sang primitive type: int i = new Integer(1)
+unboxing is transform wrapper class to primitive type: int i = new Integer(1)
 
-double và float đều biểu diễn số thực nhưng double biểu diễn chính xác hơn do 8 byte (64 bit), float 4 byte (32 bit)
+both double and float represent decimal number, but double represent more precisely 8 byte (64 bit), float 4 byte (32 bit)
 
 String vs StringBuffer vs StringBuilder:
-- String là immutable, khi += thực ra đang tạo ra 1 object String mới, StringBuilder và StringBuffer là mutable nhưng StringBuffer thread-safe còn StringBuilder thì k, String là bất biến nên luôn an toàn
-- Hiệu suất StringBuilder nhanh nhất do k có chi phí đồng bộ hóa, tới StringBuffer và String chậm nhất khi phải thay đổi nhiều
+- String is immutable, so when we update content, we are creating a new String object. StringBuilder and StringBuffer are mutable but StringBuffer thread-safe (String is immutable so it's always safe)
+- If we need to update content a lot, StringBuilder is fastest because there is no synchronization cost
 
 ## OOP
-OOP là một phương pháp lập trình phổ biến dựa trên khái niệm quan trọng: class và object
-class sẽ define các thuộc tính và phương thức, là 1 khuôn mẫu của các đối tượng
-- Tính đóng gói (encapsulation): giúp ẩn đi những chi tiết triển khai bên trong và chỉ hiển thị chức năng thông qua 1 giao diện
-- Tính kế thừa (inheritance): cho phép inherit toàn bộ phương thức và thuộc tính của 1 lớp đã tồn tại -> giúp tái sử dụng code và tạo ra cấu trúc phân cấp
-- Tính đa hình (polymorphism): cho phép perform cùng 1 action trên các đối tượng khác nhau theo các cách khác nhau
-- Tính trừu tượng (abstraction): cho phép define các lớp và phương thức trừu tượng giúp ẩn đi các chi tiết triển khai bên trong
+
+OOP is a programming method that's based on 2 important concepts: class and object. Class define attribute and method, and it's a prototype of an object
+
+- Tính đóng gói (encapsulation): allow restrict direct access to internal state to protect data
+- Tính kế thừa (inheritance): allow a class to inherit all methods and attributes of parent class to reuse code and create hierarchy structire
+- Tính đa hình (polymorphism): allow different objects perform the same action with different implementation
+- Tính trừu tượng (abstraction): allow define abstract method and class to hide internal implementation
 
 ```
 abstract class Vehicle {
@@ -228,88 +265,93 @@ class Car extends Vehicle {
 ```
 
 access modifier:
-- public: truy cập ở bất cứ đâu
-- protected: các lớp trong cùng 1 package hoặc lớp con
-- package-private (default when no access modifier): các lớp trong cùng 1 package
-- private: Chỉ trong lớp đó
+- public: accessible everywhere
+- protected: accessible within subclass or class under the same package
+- package-private (default when no access modifier): accessible within class under the same package
+- private: only accessible within that class
 
 
 ## Exception
-exception là các ngoại lệ làm crash chương trình, có 3 loại:
-- checked exception: xảy ra tại compile time, thường là các tình huống đã được chương trình dự đoán và bắt phải handle. Ví dụ như IOException, SQLException
-- unchecked exception: xảy ra tại runtime, thường là do lỗi lập trình như chia cho 0 ArithmeticException, NullPointerException
-- error: là các lỗi nghiêm trọng vượt ngoài tầm xử lý của dev vd như OutOfMemoryError, StackOverflowError
+exception is unexpected behavior that crash program, 3 types:
+- checked exception: happen at compile time, it's already predicted by program and forced to handle, for example IOException, SQLException
+- unchecked exception: happen at runtime, it's usually programming fault like 0 division, which cause ArithmeticException or NullPointerException
+- error: is serious error that's out of developer control like OutOfMemoryError, StackOverflowError
 
 Throws: được khai báo ở cuối chữ kí của phương thức dùng để khai báo 1 phương thức có thể ném ra 1 hoặc nhiều exception. Khi phương thức đó được gọi, bắt buộc xử lý những exception này
+Throws: declared in the method signature to define that a method can throw 1 or more exception. when that method is called, we have to handle these exception
 ```
 public void myMethod() throws IOException, SQLException {
-    // Mã có thể ném ra IOException hoặc SQLException
+    // can throw IOException hoặc SQLException
 }
 ```
 
 ## Interface
 Interface là một tập hợp các phương thức trừu tượng, có thể có các field nhưng java tự động làm các field này thành static và final
+Interface is a collection of abstract method, it can contain field but java automatically mark these field as static and final
 
-Marker interface là interface k có gì hết, dc dùng để cung cấp thông tin cho JVM, vd như Serializable
+Marker interface is empty interface used to provide information for JVM, like Serializable
 
-vs Abstract class
-- interface chỉ có thể chứa abstract method còn abstract class có thể chứa thêm method đã được triển khai
-- abstract có thể chứa biến instance k phải private, trong khi interface k thể
-- 1 lớp chỉ có thể extend 1 abstract class nhưng có thể implement nhiều interface
+vs abstract class
+- interface can only contain abstract method, while abstract class can contain both abstract and normal method
+- interface can only contain static final variable, while abstract class can contain any kind of variable
+- 1 class can only extend 1 abstract class but can implement multiple interface
 
 ## equals vs ==
-== khi dùng với primitive type thì sẽ so sánh giá trị trực tiếp, còn khi dùng với object thì sẽ so sánh tham chiếu (địa chỉ bộ nhớ), nghĩa là check xem 2 biến có cùng tham chiếu đến 1 đối tượng trong bộ nhớ hay k
+== is used for primitive type to compare value directly, if it's used for object, it will compare reference, which mean it's checking if 2 object pointing to the same memory address
 
-equals có thể được override so sánh nội dung, vd như String override để so sánh chuỗi → an toàn hơn
-tuy nhiên == có thể được sử dụng cho enum vì mỗi hằng số enum được đảm bảo là duy nhất 
+equals is a method of an object and it can be override to custom logic to compare. For example, String override method equals to compare content value
+
+Note that == can be used for enum because each enum constant is unique
 
 ## Comparable vs Comparator
-Comparable được implement bởi 1 đối tượng để so sánh với 1 đối tượng khác, override phương thức compareTo(Object o)
+Comparable is implement by an object to compare with another object, override method compareTo(Object o)
 
-Comparator được implement để so sánh 2 đối tượng, override phương thức compare(Object o1, Object o2)
+Comparator is implement to compare 2 object, override method compare(Object o1, Object o2)
 
 ## Collection
-Iterator là 1 interface cung cấp các method duyệt qua phần tử của Collection: next, hasNext, remove
+Iterator is an interface that provide method to iterate through elements of a Collection like next, hasNext, remove
 
-interface gốc là Collection
-các interface con và lớp triển khai:
+root interface is Collection and other subinterface with implementation:
 - List: LinkedList, ArrayList
 - Set: HashSet, TreeSet
 - Queue: ArrayDeQue, PriorityQueue
 - Map: HashMap, LinkedHashMap, TreeMap
 
 Array vs ArrayList:
-- ArrayList chỉ có thể lưu trữ đối tượng, trong khi Array có thể lưu thêm primitive type
-- Array thao tác nhanh hơn do kích thước cố định, ArrayList thao tác chậm hơn do phải duy trì kích thước động và các phương thức phức tạp
+- ArrayList can only store object, while Array can store both object and primitive type
+- Array is faster becuase of fix size, ArrayList is slower because maintain dynamic size and complex but useful methods
 
 LinkedList vs ArrayList:
-- ArrayList cho phép truy cập ngẫu nhiên nhanh hơn nhưng bù lại perform write lâu hơn do phải dịch chuyển các phần tử, LinkedList truy cập ngẫu nhiên lâu hơn do phải duyệt qua từng Node nhưng write nhanh hơn do chỉ cần update pointer
-- ArrayList qly bộ nhớ hiệu quả hơn do sử dụng mảng động có thể tăng giảm kích thước mảng tùy theo số lượng item, LinkedList dùng thêm bộ nhớ cho pointer giữa các node
+- ArrayList access element based on random index faster, but write slower because need to move elements
+- LinkedList access element based on random index slower because need to iterate through node, but write faster because just need to update pointer
+- ArrayList manage memory more efficient because it use dynamic size that shrink up or down based on number of element, LinkedList use more memory to maintain pointer between nodes
 
 HashSet vs TreeSet:
-- HashSet k duy trì thứ tự, TreeSet duy trì thứ tự lớn bé -> HashSet nhanh hơn khi thao tác write hoặc get
-- HashSet cho phép 1 giá trị null còn TreeSet thì k nếu k custom Comparator
+- HashSet not maintain order, while TreeSet maintain asc or desc order based on constructor parameter
+- HashSet allow 1 null value while TreeSet need custom Comparator to allow
 
-HashMap vs LinkedHashMap vs TreeMap:
-- HashMap k duy trì thứ tự, LinkedHashMap duy trì thứ tự chèn, TreeMap duy trì thứ tự lớn bé
-- HashMap nhanh nhất khi thao tác k cần thứ tự, LinkedHashMap cân bằng giữa hiệu suất và duy trì thứ tự, TreeMap hiệu quả với các thao tác sắp xếp nhưng write chậm do phải duy trì cấu trúc cây
+HashMap vs TreeMap vs LinkedHashMap:
+- HashMap not maintain order, TreeMap maintain asc or desc order, LinkedHashMap maintain insert or access order based on constructor parameter
 
-HashCode là method trả về giá trị int dùng để phân phối đối tượng trong các cấu trúc dữ liệu dựa trên bảng băm. Phải ghi đè HashCode và equals cùng lúc để 2 đối tượng bằng nhau có giá trị hash code giống nhau, nếu k 2 đối tượng bằng nhau sẽ được xử lý theo 2 đối tượng khác nhau trong các cấu trúc dữ liệu dựa trên bảng băm.
+HashCode is a method that return integer. It's used to calculate hash value when working with data structure that based on hash table so we need to override both equasl and hashCode method together so that 2 equal object have the same hash value, otherwise they will be treated as 2 different element when stored in data structure that based on hash table
 
-Cơ chế hoạt động của HashMap: 
-- Khi thêm 1 cặp key-value, HashMap sử dụng hàm hashCode để tính giá trị băm, giá trị này đại diện cho vị trí của Entry trong bảng băm hay còn gọi là bucket
-- Khi dùng get thì HashMap cũng dùng hashCode để tính giá trị băm của key như lúc put để tìm đến bucket chứa key và trả về value
-- Khi 2 key khác nhau có cùng 1 giá trị hash thì trong cùng 1 bucket, HashMap sẽ lưu các Entry dưới dạng LinkedList, khi số lượng phần tử vượt quá threshold thì sẽ chuyển sang cây cân bằng.
-- Khi xảy ra va chạm, HashMap duyệt qua các phần tử trong cùng bucket và sử dụng hàm equals để xác định xem key đã tồn tại chưa khi put và tìm kiếm key ghi get
-- HashMap cho phép 1 key null được lưu trữ ở bucket đầu tiên: bucket0
+how HashMap work: 
+- when add 1 pair of key value, HashMap use hashCode method to get hash value, this value represent position of that entry in hash table, which is also known as bucket
+- when get we use the same process, get hash value from hashCode to know bucket and go straight forward to that bucket
+- when different key have the same hash value, HashMap will store entries as LinkedList within a bucket and if the number of element exceed threshold, it transform to balanced tree
+- If such collision situation, HashMap iterate through element and use equals method to get or find if key already exist when put
+- HashMap allow 1 null key and it's stored at first bucket: bucket0
 
 ## Serialize
-Serialize dùng để chuyển đổi đối tượng thành 1 dạng có thể lưu vào file, database hoặc truyền qua network thường là dưới dạng luồng byte, Deserialize ngược lại dùng để chuyển đổi luồng byte thành đối tượng.
-Sẽ có các field sensitive như password k muốn serialize thì dùng transient.
-Cần chú ý version của class vì thay đổi có thể khiến Deserialize k thành công
+Serialize used to transform object into a format that can save into file, database or pass through network under byte array. Deserialize is vice versa
+
+Mark sensitive field that we dont want to serialize as transient. Miss match version can cause deserialize unsuccessful
 
 ## Garbage collection
-khi khởi tạo 1 biến, java cấp phát bộ nhớ cho nó, khi biến k còn bất kì tham chiếu nào tới, nó có thể được dọn dẹp bởi garbage collector để giải phóng bộ nhớ. Có thể custom thêm behavior trước khi giải phóng bộ nhớ bằng cách override method finalize. Khi 1 biến k còn tham chiếu, nó có thể được dọn dẹp nhưng k phải ngay lập tức, việc dọn lúc nào tùy vào các thuật toán của garbage collector và các yếu tố như bộ nhớ còn lại trong heap, ...
+
+When init a variable, java allocate memory for it, when there is no more reference to that variable, it can be clean up by garbage collector to release memory. Not immediately, it depend on gc's algorithm and other aspect such as remaining memory in heap, ...
+
+We can custom behavior before clean up by override method finalize. 
 
 ## Reflection
 
@@ -327,39 +369,46 @@ Sample:
 - Spring use reflection to inject dependencies at runtime (inspect classes, read annotations like @Autowired then inject)
 - Hibernate uses reflection to map java objects to database tables (inspect classes, read annotations like @Column for mapping information) or extract value (read values from object's fields to generate appropriate SQL INSERT or UPDATE statements)
 
-## Process vs Thread
-- Process là 1 chương trình đang chạy, mỗi process có không gian bộ nhớ riêng biệt
-- Thread là một đơn vị xử lý cơ bản trong hệ thống chạy trong process context -> 1 process có nhiều thread, các thread trong cùng 1 process chia sẻ không gian bộ nhớ
-
 ## Multi-threading
-Thread là một đơn vị xử lý cơ bản trong hệ thống
 
-Có 2 cách tạo thread:
-  - Extend Thread và hiện thực hàm run để define task. Để execute task này thì khởi tạo đối tượng extend Thread đó rồi call method start, java sẽ cấp phát tài nguyên và chạy phương thức run trên 1 thread mới. Nếu call method run trực tiếp thì phương thức sẽ được thực thi trên current thread. Hàm start chỉ được call 1 lần nếu không sẽ IllegalThreadStateException.
-  - Implement Runnable và hiện thực hàm run để define task. Để execute task này thì khởi tạo class runnable và truyền vào tham số khi khởi tạo class thread rồi call method start của Thread.
+2 ways to create thread in java
+- Creaete a class that extend Thread and override method `run()` to define task logic. To execute this task, initialize object then call method `start()`
+- Create a class that implement Runnable and override method `run()` to define task logic. To execute this task, init runnable object, then init thread object with runnable object as constructor parameter, finally call method start()
 
-Runnable được prefer vì:
-  - Seperate logic giữa task definition và execution
-  - Compatible với ThreadPool do work well với ExecutorService
+java will allocate resource and run in a seperate thread. If call method `start()` more than once, java throw IllegalThreadStateException. If call method `run()` directly, it will be executed on current thread
 
-Thread pool dùng để giới hạn số lượng thread cùng 1 thời điểm, bên trong có 1 queue dùng để chứa các task, khi thread nào trống sẽ lấy task trong queue này ra để execute. Vậy bản chất của Thread pool là chuỗi các thread đang chờ để kéo các Runnable trong queue ra để thực hiện theo các phương thức run riêng của chúng.
+Runnable is prefer because it seperate task logic from task execution and compatible with threadpool
+```
+CustomRunnable customRunnable = new CustomRunnable();
+Thread thread = new Thread(customRunnable);
+thread.start();
+```
+
+Callable like Runnable but override method `call()` instead of run() and it does return value or throw checked exception
+```
+ExecutorService executorService = new ForkJoinPool();
+Future<String> future = executorService.submit(new CustomRunnable());
+String result = future.get();
+```
+
+Threadpool used to limit number of thread at one time, inside it is a runnable queue. When all threads are busy, submitted tasks are placed into this queue and executed when a thread becomes available.
+
+If all thread are busy with max pool size reached and queue capacity is full, reject policy is applied. Implement RejectedExecutionHandler to custom logic or use 1 of 4 built-in policies: AbortPolicy (throws exception), CallerRunsPolicy (runs task in caller thread), DiscardPolicy (drops task silently), and DiscardOldestPolicy (remove oldest and retry submitting). CallerRunsPolicy is often preferred to avoid losing task
 
 ![](./images/threadpool.webp)
 
-Callable giống với Runnable nhưng thay vì sử dụng void run thì sử dụng hàm call và có trả về kết quả hoặc throw checked exception.
-
 Never create raw thread with `new Thread()` in production, always use ExecutorService for threadpool.
 
-Khi Executor submit 1 callable sẽ trả về Future, call method get để block current thread cho đến khi trả về kqua. Có 1 số nhược điểm như k hỗ trợ built-in exception handling, k bắt được sự kiện sau khi task done, ...
+When ExecutorService submit a callable, it return a Future, call method get() to block current thread until result is returned. This has several disadvantages like not support built-in exception handling, cannot catch event after task done, ...
 
 → CompletableFuture:
 - Task chaining: thenApply(result -> result + 1), thenAccept(result -> logger.info(result))
 - Built-in exception handling: exceptionally()
 - Combine multiple tasks: allOf, anyOf
 
-Base interface là Executor
+when config thread pool, return DelegatingSecurityContextAsyncTaskExecutor so that thread contain security context if need
 
-khi config thread pool trong SpringBoot, nên return DelegatingSecurityContextAsyncTaskExecutor để thread có security context
+Tomcat follow a thread-per-request model, so can config server.tomcat.threads.max=200, but be aware that if tomcat thread larger than db connection, they have to compete and wait
 
 ### Lifecycle
 
@@ -393,7 +442,15 @@ try {
 
 volatile only guarantee visibility, while synchronized guarantee visibility and atomicity
 
+### ConcurrentHashMap vs synchronizedMap
+
+Both are used when multiple threads modify a shared map. synchronizedMap use 1 big lock so only one thread can access at a time, while ConcurrentHashMap does not lock the entire map, instead it lock at bucket level when needed
+
 ## Other
+
+JRE is java running environment, JDK is a development kit to develop java application, JDK contain JRE
+
+A managed language like Java have pros and cons such as provide automatic memory management, faster development but whenever garbage collector do the clean up, it's like a stop-the-world event and can cause latency
 
 Java is both a compiled and an interpreted language:
 - compile: Java source code (.java file) is first translated into bytecode (.class file) by the javac compiler
@@ -422,38 +479,33 @@ public static void main(String[] args) {
 }
 ```
 
-Biến instance là attribute của 1 class, được khai báo trong class nhưng ngoài method
+cannot override private/static/final method
 
-K thể override private, static, final method
+java not support extend multi class because of problems like 2 class have same method, use interface instead
 
-java chỉ có thể extend 1 class → k hỗ trợ đa kế thừa do các vấn đề như 2 class có cùng 1 method, instead sử dụng interface
+variable scope:
+- local variable: declare inside method, accessible within that method
+- instance variable: declare inside class but outside method, accessible within that class's methods
+- static variable: declare inside class but outside method with static keyword, accessible within that class's methods and outside class through class's name if not private, for example ClassName.staticVariable
+- global variable: java not have concept of global variable but we can use non private static as global variable
 
-Phạm vi sử dụng biến: 
-- biến local: khai báo trong phương thức, truy cập bên trong phương thức đó
-- biến instance: khai báo bên trong class nhưng ngoài phương thức, truy cập bên trong phương thức của class đó
-- biến static: khai báo bên trong class nhưng ngoài phương thức với từ khóa static, truy cập bên trong phương thức của class đó và bên ngoài class thông qua tên class (ClassName.staticVariable) nếu k private
-- biến global: java k có concept biến global nhưng biến static k private cũng có thể coi là biến global
+there is no such concept as static class but allow define nested static class
 
-Synchronized được sử dụng khi cần đảm bảo chỉ 1 luồng có thể truy cập 1 đoạn mã tại 1 thời điểm
-
-volatile dùng để thông báo 1 biến có thể bị thay đổi bởi các thread khác nhau tại cùng 1 thời điểm, vì vậy khi truy cập, biến sẽ được đọc từ bộ nhớ chính chứ k phải bộ nhớ cache của CPU để đảm bảo các thread thấy giá trị mới nhất
-
-Không thể truy cập biến non-static trong 1 static context, vd:
+cannot access non-static variable inside a static context
 ```
 public class MyClass {
-    int myVar = 10; // Biến non-static
+    int myVar = 10;
 
     public static void myStaticMethod() {
-        // System.out.println(myVar); // Dòng này sẽ gây lỗi biên dịch
+        // System.out.println(myVar); // error
 
-        // Để truy cập myVar, bạn cần một instance của MyClass
         MyClass myInstance = new MyClass();
-        System.out.println(myInstance.myVar); // Đây là cách truy cập myVar từ một static context
+        System.out.println(myInstance.myVar); // correct
     }
 }
 ```
 
-3 cách thoát khỏi nested loop:
+3 ways to exit nested loop:
 - flag
   ```
   boolean flag = true;
@@ -482,18 +534,4 @@ public class MyClass {
   ```
 - return
 
-JRE là môi trường run các ứng dụng java, JDK là bộ công cụ dùng để phát triển ứng dụng java, trong JDK bao gồm JRE
-
-Fail-fast vs fail-safe:
-- Fail-fast throw exception ngay khi phát hiện sự cố trong khi fail-safe tiếp tục hoạt động (vd: thay đổi phần tử khi đang duyệt)
-- Fail-safe thích hợp trong môi trường đa luông do tránh dc các lỗi ConcurrentModificationException
-
-Không có khái niệm static class nhưng cho phép define nested static class
-
 Enum is thread-safe
-
-Mock là để bypass những phần k cần test. sample scenario: When testing the OrderService, you want to verify its logic for different payment outcomes, run test with live payment provider is unreliable => create a mock of the PaymentGateway to control its responses and bypass the actual external communication
-
-is hibernate an interface implementation or vice versa ? Hibernate is an implementation of JPA specifications that provides the actual code to perform database operations, while JPA defines the rules and interfaces
-
-Tomcat is default embedded web server. When run a Spring Boot application, it starts up an instance of Tomcat within the same process. spring-boot-starter-web dependency automatically includes spring-boot-starter-tomcat
