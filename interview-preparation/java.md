@@ -231,6 +231,15 @@ String vs StringBuffer vs StringBuilder:
 OOP is a programming method that's based on 2 important concepts: class and object. Class define attribute and method, and it's a prototype of an object
 
 - Tính đóng gói (encapsulation): allow restrict direct access to internal state to protect data
+  Real scenario: to protect business rule
+  ```
+  public void setStatusCancel() {
+    if (this.status != CREATED) {
+        throw new BusinessException("Cannot cancel");
+    }
+    this.status = CANCELLED;
+  }
+  ```
 - Tính kế thừa (inheritance): allow a class to inherit all methods and attributes of parent class to reuse code and create hierarchy structire
 - Tính đa hình (polymorphism): allow different objects perform the same action with different implementation
 - Tính trừu tượng (abstraction): allow define abstract method and class to hide internal implementation
@@ -286,15 +295,28 @@ public void myMethod() throws IOException, SQLException {
 ```
 
 ## Interface
-Interface là một tập hợp các phương thức trừu tượng, có thể có các field nhưng java tự động làm các field này thành static và final
+
 Interface is a collection of abstract method, it can contain field but java automatically mark these field as static and final
 
 Marker interface is empty interface used to provide information for JVM, like Serializable
 
 vs abstract class
-- interface can only contain abstract method, while abstract class can contain both abstract and normal method
 - interface can only contain static final variable, while abstract class can contain any kind of variable
 - 1 class can only extend 1 abstract class but can implement multiple interface
+
+### Functional interface
+
+Functional interface is an interface that may contains default, static methods but only 1 default methods. It enables lambda expressions. Several built-in functional interfaces:
+```
+Function<String, Integer> length = s -> s.length();
+System.out.println(length.apply("Kelvin")); // 6
+
+Predicate<Integer> isEven = n -> n % 2 == 0;
+System.out.println(isEven.test(4)); // true
+
+Consumer<String> printer = s -> System.out.println(s);
+printer.accept("Hello");
+```
 
 ## equals vs ==
 == is used for primitive type to compare value directly, if it's used for object, it will compare reference, which mean it's checking if 2 object pointing to the same memory address
