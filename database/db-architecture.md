@@ -124,3 +124,7 @@ UPDATE metrics SET pageviews = pageviews + 1 WHERE id = 1;
 
 Better patterns:
 - append-only by using `insert` and aggregate later
+
+## Normalization
+
+Normalization is the process of organizing data to reduce redundancy. For example, table order shouldn't store customer info because it repeat many times and when customer update contact, we have to update many rows, instead seperate into customer table and use foreign key for reference

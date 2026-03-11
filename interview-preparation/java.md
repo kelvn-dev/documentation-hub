@@ -94,6 +94,45 @@ private volatile PriceData latest;
 
 The object is immutable → so no one can partially modify it
 
+### OOP
+
+What's printed ?
+
+```
+class Parent {
+    String name = "Parent";
+
+    public Parent() {
+        printName();
+    }
+
+    public void printName() {
+        System.out.println("1. Name in Parent: " + name);
+    }
+}
+
+class Child extends Parent {
+    String name = "Child";
+
+    public Child() {
+        System.out.println("2. Child Constructor finished");
+    }
+
+    @Override
+    public void printName() {
+        System.out.println("3. Name in Child: " + name);
+    }
+}
+
+
+class ParentExample {
+    public static void main(String[] args) {
+        Parent obj = new Child();
+        System.out.println("4. Reference name: " + obj.name);
+    }
+}
+```
+
 ## SOLID
 Single responsibility
 - Your class or method should have only one responsibility
@@ -241,7 +280,23 @@ OOP is a programming method that's based on 2 important concepts: class and obje
   }
   ```
 - Tính kế thừa (inheritance): allow a class to inherit all methods and attributes of parent class to reuse code and create hierarchy structire
-- Tính đa hình (polymorphism): allow different objects perform the same action with different implementation
+- Tính đa hình (polymorphism): allow different objects perform the same action with different implementation (only for method, not field)
+  ```
+  class Parent {
+      String name = "Parent";
+  }
+
+  class Child extends Parent {
+      String name = "Child";
+  }
+
+  class ParentExample {
+      public static void main(String[] args) {
+          Parent obj = new Child();
+          System.out.println(obj.name); // Parent
+      }
+  }
+  ```
 - Tính trừu tượng (abstraction): allow define abstract method and class to hide internal implementation
 
 ```

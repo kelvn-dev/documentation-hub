@@ -28,7 +28,7 @@ Serivce interaction design with websocket, rabbitmq, postgre and redis sorted se
 
 - Blue-Green: Maintain 2 similar environment but different code version, for example Blue with old version and Green with new version. After being tested thoroughly, we can update load balancer or api gateway to route traffic to Green
 - Rolling update: Update each instance until the whole cluster use same new version. This save resource as it does not need to maintain 2 env like Blue-Green. Popular like k8s behavior, update image and k8s will gradually replace old pod with new pod 
-- Others: Canary, AB testing, ...
+- Others: Canary (release the new version to a small percentage of users first), Recreate (Low complexity but have down time), ...
 
 ## Caching strategy
 
@@ -86,13 +86,15 @@ For cpu task like resize an image, sort a large array of data or do a complex ca
 
 For IO task like db call or api call, number of thread can larger than number of cpu because cpu is idle during waiting for external resources
 
+blocking I/O means your code is waiting for an external event to complete before it can proceed
+
 ## Memory profiling
 
 Memory profiling is analyzing heap usage, object allocation, and garbage collection behavior to detect memory leaks and performance issues. In springboot, we can use tools like Java Flight Recorder or Actuator metrics to monitor JVM memory
 
 ## Race condition
 
-When multiple threads modify shared data without proper synchronization
+When multiple threads modify shared data without proper synchronization, which cause unpredictable results
 
 ## Deadlock
 
@@ -162,3 +164,9 @@ Sample full flow:
 - Some process poll inbox table for new message and process it
 
 The Outbox/Inbox patterns provide communication backbone that allows the Saga pattern to orchestrate complex workflows without losing messages or creating data inconsistencies
+
+## Waterfall vs agile
+
+Waterfall is sequential development model, while agile is incremental development model. So Waterfall already have a big plan at first, all requirements are defined early and changes are costly. In the contrast, agile not deliver the whole product at the end, but the development happens in small iterations called sprints, each sprint last for about 1-2 weeks to serve planning, developing and testing.
+
+So for frequent release and continuous feedback, choose agile. For fixed requirement, choose waterfall
