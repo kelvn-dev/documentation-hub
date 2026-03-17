@@ -116,6 +116,27 @@ is hibernate an interface implementation or vice versa ? Hibernate is an impleme
 
 Tomcat is default embedded web server. When run a Spring Boot application, it starts up an instance of Tomcat within the same process. spring-boot-starter-web dependency automatically includes spring-boot-starter-tomcat
 
+types of jpa query:
+
+- JPQL (Java Persistence Query Language): uses Entity and field names
+  ```
+  @Query("SELECT u FROM User u WHERE u.name = :name")
+  List<User> findByName(String name);
+  ```
+
+- Native query: use raw sql
+  ```
+  @Query(value = "SELECT * FROM users WHERE name = :name", nativeQuery = true)
+  List<User> findByNameNative(String name);
+  ```
+
+- Query Method
+  ```
+  List<User> findByName(String name);
+  ```
+
+- Criteria API: programmatic way to build queries dynamically
+
 1. What is the difference between Spring and Spring Boot?
 
   Spring là 1 java framework bao gồm nhiều module và thư viện như spring core, spring mvc, spring data, …

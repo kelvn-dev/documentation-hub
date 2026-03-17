@@ -279,7 +279,7 @@ OOP is a programming method that's based on 2 important concepts: class and obje
     this.status = CANCELLED;
   }
   ```
-- Tính kế thừa (inheritance): allow a class to inherit all methods and attributes of parent class to reuse code and create hierarchy structire
+- Tính kế thừa (inheritance): allow a class to inherit all methods and attributes of parent class to reuse code and create hierarchy structure
 - Tính đa hình (polymorphism): allow different objects perform the same action with different implementation (only for method, not field)
   ```
   class Parent {
@@ -341,7 +341,6 @@ exception is unexpected behavior that crash program, 3 types:
 - unchecked exception: happen at runtime, it's usually programming fault like 0 division, which cause ArithmeticException or NullPointerException
 - error: is serious error that's out of developer control like OutOfMemoryError, StackOverflowError
 
-Throws: được khai báo ở cuối chữ kí của phương thức dùng để khai báo 1 phương thức có thể ném ra 1 hoặc nhiều exception. Khi phương thức đó được gọi, bắt buộc xử lý những exception này
 Throws: declared in the method signature to define that a method can throw 1 or more exception. when that method is called, we have to handle these exception
 ```
 public void myMethod() throws IOException, SQLException {
@@ -361,7 +360,7 @@ vs abstract class
 
 ### Functional interface
 
-Functional interface is an interface that may contains default, static methods but only 1 default methods. It enables lambda expressions. Several built-in functional interfaces:
+Functional interface is an interface that may contains default, static methods but only 1 abstract methods to enables lambda expressions. Several built-in functional interfaces:
 ```
 Function<String, Integer> length = s -> s.length();
 System.out.println(length.apply("Kelvin")); // 6
@@ -464,7 +463,7 @@ thread.start();
 Callable like Runnable but override method `call()` instead of run() and it does return value or throw checked exception
 ```
 ExecutorService executorService = new ForkJoinPool();
-Future<String> future = executorService.submit(new CustomRunnable());
+Future<String> future = executorService.submit(new CustomCallable());
 String result = future.get();
 ```
 
@@ -475,6 +474,8 @@ If all thread are busy with max pool size reached and queue capacity is full, re
 ![](./images/threadpool.webp)
 
 Never create raw thread with `new Thread()` in production, always use ExecutorService for threadpool.
+
+Never use newFixedThreadPool() because internally it use a runnable queue with unlimited size, so the queue can be grow until JVM memory is exhausted, whichs cause OOM
 
 When ExecutorService submit a callable, it return a Future, call method get() to block current thread until result is returned. This has several disadvantages like not support built-in exception handling, cannot catch event after task done, ...
 

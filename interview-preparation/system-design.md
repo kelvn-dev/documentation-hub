@@ -135,6 +135,22 @@ Think of the lock path as a lock id
 
 If a client crashes, its znode is auto-deleted, releasing the lock
 
+## Exponential backoff
+
+Exponential backoff is a retry strategy where the wait time between failed attempts increases exponentially rather than retrying immediately (1s, 2s, 4s, 8s, ...) . For example, allows time for recovery when encountering error rate-limiting (429)
+
+## Circuit breaker
+
+Circuit breaker is a resilience design pattern used to prevents additional load on the failing service. If the number of failures exceeds threshold within a time period, subsequent calls are automatically redirected to a fallback mechanism
+
+Initially, allowing calls is closed state, then failure exceed threshold, transitions to an open state. After a period, circuit breaker enters a half-open state, where it allows a limited number of calls to the remote service to test if it has recovered
+
+Use Resilience4j over Hystrix because it offer more features such as circuit breakers, rate limiters, retry mechanisms, and bulkheads
+
+## Bulkhead
+
+Bulkhead is a resilience design pattern used to limit resources allocated to a service, such as threadpool, db connection or concurrent call. This isolation ensures that a failure in one service does not overwhelm the entire system but can affect performance
+
 ## Saga with inbox/outbox pattern
 
 Saga: Defines what needs to happen (the sequence of steps and compensations).
@@ -149,7 +165,7 @@ A saga is a sequence of local transactions. Each local transaction updates the d
 
 We can’t guarantee the atomicity of the corresponding database transaction and sending of an event, for example, if a service sends the event in the middle of transaction, there is no guarantee that the transaction will commit. Outbox pattern used to solve this dual writes problem.
 
-Application stores event in outbox table instead of sending an event. When a service performs a business action, it writes the event to an outbox table in the same database transaction and a separate process (CDC) reads from this outbox table and publishes the message to a message broker.
+Application stores event in outbox table instead of sending an event. When a service performs a business action, it writes the event to an outbox table in the same database transaction and a separate process (CDC) reads from this outbox table and publishes the message to a message broker. Upon receiving an acknowledgment from the broker, publisher update status of that record or just delete to maintain a small, high-performance table
 
 ### Inbox pattern (receiver side)
 
