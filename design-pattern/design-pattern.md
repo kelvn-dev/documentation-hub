@@ -11,3 +11,9 @@ Are you choosing implementations based on context?
 - Abstract factory
 
 Comparision: Both used to create objects without specifying concrete class. Factory pattern creates a single object while abstract factory creates a family of related objects to ensure compatible groups of objects are created together
+
+## Behavioral patterns
+
+If-else base on type violate open/close principal. Replace it with strategy pattern with factory or enum with behaviors
+
+Enum with behaviors: For simple types, declare abstract methods in an Enum and have each enum constant implement its own logic

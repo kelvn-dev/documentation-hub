@@ -48,6 +48,74 @@ Map<String, Integer> map = list.stream()
 // Result: {A=1, B=2}
 ```
 
+Note: cannot stream on char[]
+
+Find out the count of every Character in the given String? "abcdabcghsk"
+
+List all the duplicate Characters in the String? programming
+
+Delete all the occurrences of ‘c’ from the given String and print the String? occurance
+
+Find out the even Integers ?
+```
+List<String> list = Arrays.asList("one","5","ab12","abc","8","20");
+```
+
+Reverse a string
+```
+String str="javastreamsapi";
+```
+
+Given a sentence as a String, return the second-highest distinct word length present in the sentence
+```
+String sentence="I am working in motivated organization"
+```
+
+Merge Two Lists by Stream
+```
+List<Integer> list1= Arrays.asList(1,2,3,4);
+List<Integer> list2= Arrays.asList(5,6,7,8);
+```
+
+Given a list of strings, count how many times each word appears
+```
+List<String> words = Arrays.asList(
+        "apple", "banana", "apple", "orange", "banana"
+);
+```
+
+Given a list of employees,
+
+find the third-highest salary among employees belonging to the ‘Engineering’ department
+
+Highest-paid employee per department
+```
+class Employee {
+    private String name;
+    private String department;
+    private int salary;
+    private int age;
+
+    public Employee(String name, Department department, double salary) {
+        this.name = name;
+        this.department = department;
+        this.salary = salary;
+    }
+    public String getName() { return name; }
+    public Department getDepartment() { return department; }
+    public double getSalary() { return salary; }
+}
+
+
+List<Employee> employees = Arrays.asList(
+        new Employee("Aman", "Engineering", 90000),
+        new Employee("Riya", "Engineering", 80000),
+        new Employee("John", "HR", 70000),
+        new Employee("Sara", "Engineering", 75000),
+        new Employee("Jim", "Engineering", 70000)
+);
+```
+
 ### Multithreading
 
 scenario: one thread that updates the latest price into a field and multiple worker threads just read that value
@@ -132,6 +200,14 @@ class ParentExample {
     }
 }
 ```
+
+2 interface have the exaclty similar method, if a class implement these both interface and implement that method, how class recognize method come from which interface ?
+
+If both are abstract method, doesn’t need to distinguish because the methods are considered the same.
+
+Bonus: If both or 1 of both are default method, must explicitly implement and can optionally use `InterfaceName.super.method()`
+
+2 interface have the same method name cannot have different return type
 
 ## SOLID
 Single responsibility
@@ -559,7 +635,11 @@ public static void main(String[] args) {
 
 cannot override private/static/final method
 
-java not support extend multi class because of problems like 2 class have same method, use interface instead
+final method not allow to override and final class not allow subclass to extend
+
+java not support extend multi class because of problems like 2 class have same method and java not require to override method, use interface instead
+
+Use stream api when you want to improve readability with built-in function like collect, filter, map and use for loop when there is just a simple iteration or need control flow with break, continue
 
 variable scope:
 - local variable: declare inside method, accessible within that method
