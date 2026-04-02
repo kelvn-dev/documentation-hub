@@ -1,167 +1,5 @@
 # Java core
 
-## Scenario Based Interview Questions
-
-### Basic
-difference between ++num and num++ ? 
-what is the result ?
-```
-List<Integer> list = Arrays.asList(1, 2, 3);
-for (int i = 0; i < list.size(); ++i) {
-    int item = list.get(i);
-    int num = item++ + ++item;
-    System.out.println(num);
-}
-```
-
-Why
-```
-Integer a = 1000;
-Integer b = 1000;
-System.out.println(a == b); // false
-
-Integer x = 1;
-Integer y = 1;
-System.out.println(x == y); // true
-```
-→ Integer is object so compare using '==' is actually checking are these two variables pointing to the exact same object in memory
-
-Java maintains a cache of Integer objects from -128 to 127 because small numbers are used all the time (loops, array indices, counters) → java hands x and y the same cached Integer instance
-
-### Stream API
-convert list to map using stream api, if there is key conflict ?
-
-→ Use merge function
-```
-List<MyObject> list = Arrays.asList(
-    new MyObject("A", 1),
-    new MyObject("B", 2),
-    new MyObject("A", 3) // Duplicate key "A"
-);
-
-Map<String, Integer> map = list.stream()
-    .collect(Collectors.toMap(
-        MyObject::getKey,
-        MyObject::getValue,
-        (existingValue, newValue) -> existingValue // merge function
-    ));
-// Result: {A=1, B=2}
-```
-
-Note: cannot stream on char[]
-
-Find out the count of every Character in the given String? "abcdabcghsk"
-
-List all the duplicate Characters in the String? programming
-
-Delete all the occurrences of ‘c’ from the given String and print the String? occurance
-
-Find out the even Integers ?
-```
-List<String> list = Arrays.asList("one","5","ab12","abc","8","20");
-```
-
-Reverse a string
-```
-String str="javastreamsapi";
-```
-
-Given a sentence as a String, return the second-highest distinct word length present in the sentence
-```
-String sentence="I am working in motivated organization"
-```
-
-Merge Two Lists by Stream
-```
-List<Integer> list1= Arrays.asList(1,2,3,4);
-List<Integer> list2= Arrays.asList(5,6,7,8);
-```
-
-Given a list of strings, count how many times each word appears
-```
-List<String> words = Arrays.asList(
-        "apple", "banana", "apple", "orange", "banana"
-);
-```
-
-Given a list of employees,
-
-find the third-highest salary among employees belonging to the ‘Engineering’ department
-
-Highest-paid employee per department
-```
-class Employee {
-    private String name;
-    private String department;
-    private int salary;
-    private int age;
-
-    public Employee(String name, Department department, double salary) {
-        this.name = name;
-        this.department = department;
-        this.salary = salary;
-    }
-    public String getName() { return name; }
-    public Department getDepartment() { return department; }
-    public double getSalary() { return salary; }
-}
-
-
-List<Employee> employees = Arrays.asList(
-        new Employee("Aman", "Engineering", 90000),
-        new Employee("Riya", "Engineering", 80000),
-        new Employee("John", "HR", 70000),
-        new Employee("Sara", "Engineering", 75000),
-        new Employee("Jim", "Engineering", 70000)
-);
-```
-
-### Multithreading
-
-scenario: one thread that updates the latest price into a field and multiple worker threads just read that value
-```
-private double latestPrice;
-```
-
-one writer, many readers but why workers sometimes read older prices even though a new price is already updated ? 
-
-→ the problem is **visibility**, not concurrency.
-
-Writer thread may update the value only in its CPU cache, and might not push it to main memory immediately. Meanwhile, reader threads may read an older value from their own cache
-
-Java Memory Model doesn’t guarantee visibility unless we use:
-- volatile
-- synchronized
-- Atomic field types
-- ...etc
-
-→ Fix: make the field volatile
-```
-private volatile double latestPrice;
-```
-
-volatile used to mark a variable as it can be modified by different threads at the same time, so write operation will force data to main memory and read operation will force CPU to fetch latest value from memory
-
-In case not just price, but also another field that must always be consistent (like can’t read a new price but an old timestamp, or vice-versa), 2 separate volatile variables are unsafe because update of price + timestamp is not atomic
-
-→ Define single immutable object
-```
-class PriceData {
-    final double price;
-    final long timestamp;
-    PriceData(double p, long t) {
-        price = p;
-        timestamp = t;
-    }
-}
-```
-Then 
-```
-private volatile PriceData latest;
-```
-
-The object is immutable → so no one can partially modify it
-
 ### OOP
 
 What's printed ?
@@ -201,9 +39,25 @@ class ParentExample {
 }
 ```
 
-2 interface have the exaclty similar method, if a class implement these both interface and implement that method, how class recognize method come from which interface ?
+Why Doesn’t This Throw NullPointerException?
+```
+class Demo {
+    static void show(){
+        System.out.println("Hello Java");
+    }
+}
 
-If both are abstract method, doesn’t need to distinguish because the methods are considered the same.
+public class Test {
+    public static void main(String[] args){
+        Demo obj = null;
+        obj.show();
+    }
+}
+```
+
+→ Static methods belong to the class, not the object so internally compiler convert to Demo.show()
+
+2 interface have the exaclty similar abstract method, if a class implement these both interface, it can implement 1 method for both
 
 Bonus: If both or 1 of both are default method, must explicitly implement and can optionally use `InterfaceName.super.method()`
 
@@ -335,7 +189,7 @@ autoboxing is transform primitive type to wrapper class: Integer i = 1
 
 unboxing is transform wrapper class to primitive type: int i = new Integer(1)
 
-both double and float represent decimal number, but double represent more precisely 8 byte (64 bit), float 4 byte (32 bit)
+both double and float represent decimal number, but double represent more precisely 8 byte, float 4 byte
 
 String vs StringBuffer vs StringBuilder:
 - String is immutable, so when we update content, we are creating a new String object. StringBuilder and StringBuffer are mutable but StringBuffer thread-safe (String is immutable so it's always safe)
@@ -426,13 +280,17 @@ public void myMethod() throws IOException, SQLException {
 
 ## Interface
 
-Interface is a collection of abstract method, it can contain field but java automatically mark these field as static and final
+Interface is a collection of abstract method used to define the behavior that implement class can perform, it can contain field but java automatically mark these field as static and final
 
 Marker interface is empty interface used to provide information for JVM, like Serializable
 
-vs abstract class
+### Interface vs abstract class
+
+regarding technical syntax
 - interface can only contain static final variable, while abstract class can contain any kind of variable
 - 1 class can only extend 1 abstract class but can implement multiple interface
+
+and regarding usecase, it's more about code management, like abstract class used to share base common field and method, while interface used to define contract that all the implement class must follow
 
 ### Functional interface
 
@@ -447,6 +305,12 @@ System.out.println(isEven.test(4)); // true
 Consumer<String> printer = s -> System.out.println(s);
 printer.accept("Hello");
 ```
+
+## Anonymous class
+
+anonymous class is a class without a name, declared and initialized in one place to override methods or provide implementation on the fly
+
+In an anonymous class, this refers to the anonymous class instance, while in a lambda, this refers to the outer class because lambda does not create a new scope
 
 ## equals vs ==
 == is used for primitive type to compare value directly, if it's used for object, it will compare reference, which mean it's checking if 2 object pointing to the same memory address
@@ -494,6 +358,8 @@ how HashMap work:
 - If such collision situation, HashMap iterate through element and use equals method to get or find if key already exist when put
 - HashMap allow 1 null key and it's stored at first bucket: bucket0
 
+HashMap resize when size exceed load factor of capacity, and it downgrade performance because entire map is rebuilt, so every existing key must recalculate hash code to determine new bucket position
+
 ## Serialize
 Serialize used to transform object into a format that can save into file, database or pass through network under byte array. Deserialize is vice versa
 
@@ -518,8 +384,19 @@ Provide flexibility but
 - make the code harder to read and debug
 
 Sample: 
-- Spring use reflection to inject dependencies at runtime (inspect classes, read annotations like @Autowired then inject)
-- Hibernate uses reflection to map java objects to database tables (inspect classes, read annotations like @Column for mapping information) or extract value (read values from object's fields to generate appropriate SQL INSERT or UPDATE statements)
+- Spring use reflection to inject dependencies at runtime by inspecting classes and reading annotations like @Autowired then inject
+- Hibernate uses reflection to map java objects to database tables by inspecting classes and reading annotations like @Column for mapping information. It also inspect object's fields to generate corresponding SQL INSERT or UPDATE statements
+
+## Stream api
+
+Stream API is a feature that provide modern, functional-style approach to process sequences of elements such as collections, arrays using operations like filter, map, and collect
+
+A stream does not store data but it is a pipeline where data flow with 3 parts:
+- Source: like myList.stream()
+- Intermediate operations: operations that return a new Stream object like filter, map, sorted. They are lazy
+- Terminal operation: operation that triggers the actual execution of the entire pipeline and produces a final result like forEach, collect, count
+
+Cannot resuse stream object even not call terminal operation yet, have to recreate source 
 
 ## Multi-threading
 
@@ -543,7 +420,9 @@ Future<String> future = executorService.submit(new CustomCallable());
 String result = future.get();
 ```
 
-Threadpool used to limit number of thread at one time, inside it is a runnable queue. When all threads are busy, submitted tasks are placed into this queue and executed when a thread becomes available.
+Threadpool used to limit number of thread at one time, inside it is a queue. When all threads are busy, submitted tasks are placed into this queue and executed when a thread becomes available.
+
+When we create threadpool in java, we usually config core pool size, max pool size and queue capacity. It work like this, for example core pool size is 2 and max pool size is 10, when 10 task come at the same time, java will not use 10 but only 2 threads to handle task and the remaining will go to queue. java only create more thread when queue capacity is full
 
 If all thread are busy with max pool size reached and queue capacity is full, reject policy is applied. Implement RejectedExecutionHandler to custom logic or use 1 of 4 built-in policies: AbortPolicy (throws exception), CallerRunsPolicy (runs task in caller thread), DiscardPolicy (drops task silently), and DiscardOldestPolicy (remove oldest and retry submitting). CallerRunsPolicy is often preferred to avoid losing task
 
@@ -573,16 +452,71 @@ NEW → RUNNABLE → (BLOCKED/WAITING/TIMED_WAITING) → TERMINATED
 - WAITING: Waiting for another thread to perform an action, for example `sleep()`, `wait()`, `join()`
 - TERMINATED: `run()` method finished or thread died due to exception
 
-### synchronized vs ReentrantLock
+## Thread-safe type
 
-- synchronized is built-in, automatically acquires lock when enter block and releases lock when exit block 
-- ReentrantLock from java.util.concurrent.locks, must manually lock() and unlock(), support advanced features like timeout
+A thread-safe type is a class or data structure that can be safely used by multiple threads at the same time without causing data problems like race condition
+
+In Java, we achieve thread safety using synchronization, atomic classes, immutable objects, or concurrent collections.
+
+In java.util.concurrent package, Java provides many thread-safe types like concurrent collection, atomic types, Synchronizers like ReentrantLock, Executors. These are preferred over traditional synchronization because they offer better performance
+
+In real systems, I prefer minimizing shared mutable state and using immutable objects or concurrent collections, because locking can become a bottleneck under high traffic
+
+### ConcurrentHashMap
+
+ConcurrentHashMap is thread-safe for individual operations but not for multi-step operations, For example
+
+Check-then-action
+```
+if (!map.containsKey("a")) {
+    map.put("a", 1);
+}
+
+=> map.putIfAbsent("a", 1);
+```
+
+Read-modify-write
+```
+map.put("count", map.get("count") + 1);
+
+=> map.compute("count", (k, v) -> v == null ? 1 : v + 1); || map.merge("count", 1, Integer::sum);
+```
+
+This is tradeoff, internally they use Compare-And-Swap and fine-grained locking to avoid global locking, which improve performance but requires developers to use correctly when dealing with compound logic
+
+Compare-And-Swap is a lock-free mechanism where a thread updates a value only if it hasn’t been changed by another thread
+
+Fine-grained locking is lock only a small part instead of locking the entire structure
+
+ConcurrentHashMap use CAS when there is no contention like bucket is empy, and use fine-grained lock when there is contention
+
+### CopyOnWriteArrayList
+
+CopyOnWriteArrayList is a thread-safe list where all write operations create a new copy. To be more specific, when writing it lock then copy entire array then modify the copy then replace old reference with new reference and old array is discarded later by GC. So only one thread can modify at a time and readers can access immutable snapshot. It is only suitable for read-heavy case because write operations are O(n)
+
+CopyOnWriteArrayList also provides snapshot-based iteration, meaning when an iterator is created, it captures a reference to the current state of the underlying array. Any subsequent modifications create a new array, so the iterator continues to operate on the old snapshot. This avoids ConcurrentModificationException but the iterator does not reflect any updates made after its creation
+
+### synchronized
+
+synchronized is built-in, automatically acquires lock when enter block and releases lock when exit block 
+
+synchronized uses a monitor lock associated with every object
+
+For instance methods or blocks, it locks the current object, so that obj1.method() and obj2.method() can run at the same time
+
+For static methods or blocks, it locks the Class object, obj1.method() and obj2.method() cannot run concurrently
 
 ```
 synchronized (this) {
     // only 1 thread at a time
 }
+```
 
+### ReentrantLock
+
+ReentrantLock from java.util.concurrent.locks, must manually lock() and unlock(), support advanced features like timeout
+
+```
 Lock lock = new ReentrantLock();
 lock.lock();
 try {
@@ -591,10 +525,6 @@ try {
     lock.unlock();
 }
 ```
-
-### synchronized vs volatile
-
-volatile only guarantee visibility, while synchronized guarantee visibility and atomicity
 
 ### ConcurrentHashMap vs synchronizedMap
 
@@ -663,6 +593,36 @@ public class MyClass {
 }
 ```
 
+Enum is thread-safe
+
+## Scenario Based Interview Questions
+
+### Basic
+difference between ++num and num++ ? 
+what is the result ?
+```
+List<Integer> list = Arrays.asList(1, 2, 3);
+for (int i = 0; i < list.size(); ++i) {
+    int item = list.get(i);
+    int num = item++ + ++item;
+    System.out.println(num);
+}
+```
+
+Why
+```
+Integer a = 1000;
+Integer b = 1000;
+System.out.println(a == b); // false
+
+Integer x = 1;
+Integer y = 1;
+System.out.println(x == y); // true
+```
+→ Integer is object so compare using '==' is actually checking are these two variables pointing to the exact same object in memory
+
+Java maintains a cache of Integer objects from -128 to 127 because small numbers are used all the time (loops, array indices, counters) → java hands x and y the same cached Integer instance
+
 3 ways to exit nested loop:
 - flag
   ```
@@ -692,4 +652,151 @@ public class MyClass {
   ```
 - return
 
-Enum is thread-safe
+### Stream API
+convert list to map using stream api, if there is key conflict ?
+
+→ Use merge function
+```
+List<MyObject> list = Arrays.asList(
+    new MyObject("A", 1),
+    new MyObject("B", 2),
+    new MyObject("A", 3) // Duplicate key "A"
+);
+
+Map<String, Integer> map = list.stream()
+    .collect(Collectors.toMap(
+        MyObject::getKey,
+        MyObject::getValue,
+        (existingValue, newValue) -> existingValue // merge function
+    ));
+// Result: {A=1, B=2}
+```
+
+Note: cannot stream on char[]
+
+Find out the count of every Character in the given String? "abcdabcghsk"
+
+List all the duplicate Characters in the String? programming
+
+Delete all the occurrences of ‘c’ from the given String and print the String? occurance
+
+Reverse a string
+```
+String str="javastreamsapi";
+```
+
+Given a sentence as a String, return the second-highest distinct word length present in the sentence
+```
+String sentence="I am working in motivated organization"
+```
+
+Merge Two Lists by Stream
+```
+List<Integer> list1= Arrays.asList(1,2,3,4);
+List<Integer> list2= Arrays.asList(5,6,7,8);
+```
+
+Find out the even Integers ?
+```
+List<String> list = Arrays.asList("one","5","ab12","abc","8","20");
+```
+
+Given a list of strings, count how many times each word appears
+```
+List<String> words = Arrays.asList(
+        "apple", "banana", "apple", "orange", "banana"
+);
+```
+
+Given a list of employees,
+
+find the third-highest salary among employees belonging to the ‘Engineering’ department
+
+Highest-paid employee per department
+```
+class Employee {
+    private String name;
+    private String department;
+    private int salary;
+    private int age;
+
+    public Employee(String name, Department department, double salary) {
+        this.name = name;
+        this.department = department;
+        this.salary = salary;
+    }
+    public String getName() { return name; }
+    public Department getDepartment() { return department; }
+    public double getSalary() { return salary; }
+}
+
+
+List<Employee> employees = Arrays.asList(
+        new Employee("Aman", "Engineering", 90000),
+        new Employee("Riya", "Engineering", 80000),
+        new Employee("John", "HR", 70000),
+        new Employee("Sara", "Engineering", 75000),
+        new Employee("Jim", "Engineering", 70000)
+);
+```
+
+### Multithreading
+
+scenario: one thread that updates the latest price into a field and multiple worker threads just read that value
+```
+private double latestPrice;
+```
+
+one writer, many readers but why workers sometimes read older prices even though a new price is already updated ? 
+
+→ the problem is **visibility**, not concurrency.
+
+Writer thread may update the value only in its CPU cache, and might not push it to main memory immediately. Meanwhile, reader threads may read an older value from their own cache
+
+Java Memory Model doesn’t guarantee visibility unless we use:
+- volatile
+- synchronized
+- Atomic field types
+- ...etc
+
+→ Fix: make the field volatile
+```
+private volatile double latestPrice;
+```
+
+volatile used to mark a variable as it can be modified by different threads at the same time, so write operation will force data to main memory and read operation will force CPU to fetch latest value from memory
+
+In case not just price, but also another field that must always be consistent (like can’t read a new price but an old timestamp, or vice-versa), 2 separate volatile variables are unsafe because update of price + timestamp is not atomic
+
+→ Define single immutable object
+```
+class PriceData {
+    final double price;
+    final long timestamp;
+    PriceData(double p, long t) {
+        price = p;
+        timestamp = t;
+    }
+}
+```
+Then 
+```
+private volatile PriceData latest;
+```
+
+The object is immutable → so no one can partially modify it
+
+
+Why Does This Thread Never Stop?
+```
+class Worker {
+    boolean running = true;
+    void work() {
+        while(running){
+
+        }
+    }
+}
+```
+
+Even another thread stop it with `worker.running = false`, worker thread keeps reading the cached value because thread may store frequently used variables in its local CPU cache. This is a memory visibility problem. Mark variable running as volatile to fix

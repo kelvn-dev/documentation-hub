@@ -91,7 +91,7 @@ Where exactly-once does not work? when a transaction includes an external side e
 For example, we delegate sending email task to a consumer, which mean we have to do an api call in the middle of a transaction, so there can be case like call api successfully but fail to commit offset.
 
 To solve this, use idempotent for external operation. For example, create a table with emailRequestId and status for tracking, if record not exist or status is not processed, we send email then update status and commit, otherwise just ignore. Should apply outbox pattern for this, instead of consumer listen message directly from topic, listen from db by using CDC
-
+ 
 In summary, kafka exactly-once feature just a guarantee for kafka-internal, not for end-to-end
 
 ## Others

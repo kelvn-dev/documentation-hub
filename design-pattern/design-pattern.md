@@ -17,3 +17,7 @@ Comparision: Both used to create objects without specifying concrete class. Fact
 If-else base on type violate open/close principal. Replace it with strategy pattern with factory or enum with behaviors
 
 Enum with behaviors: For simple types, declare abstract methods in an Enum and have each enum constant implement its own logic
+
+## Structural patterns
+
+DTO is just a simple object that carry data and DTO pattern is a structural design pattern used to transfer data between layers to decouple internal model, hide sensitive fields, ...

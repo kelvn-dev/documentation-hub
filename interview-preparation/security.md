@@ -2,28 +2,15 @@
 
 ## OAuth 2.0
 
-What is ?
-- Là authorization framework cho phép user grant 3rd-party limited access tới data của họ nằm trên 1 service hay còn gọi là resource server (nơi host data), mà k cần phải share password trực tiếp
-- Note: OAuth 2.0 is an authorization protocol and NOT an authentication protocol vì bản chất của nó là đi grant access to resource, chứ k phải provide i am
+OAuth 2.0 is an authorization framework that allow user to grant 3rd-party limited access to data that's located on a resource server without the need to share password
 
-How it works ?
-- Sử dụng access token để grant permission cho client app. Access token có thể có nhiều format, but mostly jwt
+Note: OAuth 2.0 is an authorization protocol and NOT an authentication protocol its nature is to grant access but not to prove who i am
 
-Roles
-- Client: 3rd-party client app request access
-- Authorization server: Server that issue access token, For example Auth0
-- Resource server: Server that host data
-- Resource owner: The user own resource
-
-Scopes
-- Specific permission to be granted, for example: read:user
-
-Access token and Authorization code
-- 1 vài authorization server có thể k trực tiếp trả về access token mà trả về authorization code dùng để exchange access token và optionally refresh token, vd như social login bằng gg
+After login successfully with provider like gg, redirect to a callback url with access token or authorization code to exhange for access token and optionally refresh token. Token can be of any format but mostly jwt. Then client can use this access token to call api to get data, for example google grant user:read permission and client can call gg api to get user details
 
 ## OIDC
 
-Is authentication protocol that works on top of the OAuth 2.0 framework, allow to log in to multiple applications with a single set of credentials, a process known as single sign-on (SSO)
+Is authentication protocol that works on top of the OAuth 2.0 framework, allow to log in to multiple applications with a single set of credentials, this process is also known as single sign-on
 
 Flows:
 - OIDC process starts when a user tries to log in to an application (Relying Party).

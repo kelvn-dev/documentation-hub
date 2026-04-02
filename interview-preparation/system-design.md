@@ -82,7 +82,7 @@ When the number of thread is larger than number of cpu, os need to do context sw
 
 Too many threads may reduce performance because it spends more time switching than doing real work
 
-For cpu task like resize an image, sort a large array of data or do a complex calculation, number of thread shouldn't exceed number of cpu because cpi is always busy
+For cpu task like resize an image, sort a large array of data or do a complex calculation, number of thread shouldn't exceed number of cpu because cpu is always busy
 
 For IO task like db call or api call, number of thread can larger than number of cpu because cpu is idle during waiting for external resources
 
@@ -149,7 +149,7 @@ Use Resilience4j over Hystrix because it offer more features such as circuit bre
 
 ## Bulkhead
 
-Bulkhead is a resilience design pattern used to limit resources allocated to a service, such as threadpool, db connection or concurrent call. This isolation ensures that a failure in one service does not overwhelm the entire system but can affect performance
+Bulkhead is a resilience design pattern used to limit resources allocated to a service, such as threadpool, db connection or concurrent call. This isolation ensures that a failure in one service does not overwhelm the entire system
 
 ## Saga with inbox/outbox pattern
 
@@ -160,6 +160,10 @@ Inbox: Ensures how events are consumed reliably (exactly once).
 ### Saga pattern (Orchestrator)
 
 A saga is a sequence of local transactions. Each local transaction updates the database and publishes a message or event to trigger the next local transaction. If a transaction fails, saga executes a series of compensating transactions that undo the changes that were made by the preceding transactions.
+
+2 types:
+- Orchestrator: have a centralized service knows the entire workflow and commands other services to act. Tight coupling. Best for complex workflows
+- Event bus: services just subscribe to events and react. Loose coupling. Best for simple workflows
 
 ### Outbox pattern (sender side)
 
@@ -186,3 +190,7 @@ The Outbox/Inbox patterns provide communication backbone that allows the Saga pa
 Waterfall is sequential development model, while agile is incremental development model. So Waterfall already have a big plan at first, all requirements are defined early and changes are costly. In the contrast, agile not deliver the whole product at the end, but the development happens in small iterations called sprints, each sprint last for about 1-2 weeks to serve planning, developing and testing.
 
 So for frequent release and continuous feedback, choose agile. For fixed requirement, choose waterfall
+
+## Other
+
+POST send 2 requests because browser send preflight OPTION request before the actual request to confirm whether the intended request is permitted
