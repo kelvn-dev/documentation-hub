@@ -208,9 +208,21 @@ SERIALIZABLE: the highest isolation level. Under this level, transactions are ex
 
 ### Lock
 
-Optimistic locking assumes conflicts are rare and does not lock data. Instead, it uses a version field to detect conflicts during update. If a conflict occurs, the transaction must retry. Under high contention, optimistic locking fail frequently and retry many times, which cause bad performance
+Optimistic locking assumes conflicts are rare and does not lock data. Instead, it uses a version field to detect conflicts during update. If a conflict occurs, the transaction must retry. Optimistic locking is suitable for low-contention environment, long-running transaction and read-heavy systeam. 
 
-Pessimistic locking assumes conflicts are mostly and locks the data when it is read, preventing other transactions from modifying it until the lock is released (select for update)
+Pessimistic locking assumes conflicts are mostly and locks the data when it is read, preventing other transactions from acquiring lock until the lock is released. Pessimistic locking is suitable for high-contention environment, short-live transaction and critical consistency
+
+NONE: the default used by Spring Data findById() and it is the only lock mode that can be used outside of an transaction
+
+OPTIMISTIC (or READ): Ensures that no other transaction write between the time it is read and the time the current transaction commits
+
+OPTIMISTIC_FORCE_INCREMENT (or WRITE): Similar to OPTIMISTIC, but always increase the @Version column even if row is not modified
+
+PESSIMISTIC_READ: Obtains a shared lock. Other transactions can read the data but cannot write until the lock is released (select for share)
+
+PESSIMISTIC_WRITE: Obtains an exclusive lock . Other transactions cannot read and write until the lock is released (select for no key update)
+
+PESSIMISTIC_FORCE_INCREMENT: Similar to PESSIMISTIC_WRITE but always increase the @Version column if present even if row is not modified
 
 ## Transaction manager
 

@@ -45,12 +45,12 @@ Mount videos through local file system to feed them into a Nvstreamer server, th
 
 wealth management is a digital platform that not only supports individual advisors but also large financial institutions to manage client investments through subscribtion-based feature
 
-I'm responsible for an advisor leaderboard service. The leaderboard rank user based on kpi, which is calculated from multiple criteria like asset under management and client retention rate (activity score like number of trade). so we need to normalize these data to calculate kpi score and use redis sorted set to store.
+Currently, i'm responsible for porfolio service
 
-
-how to normalize ?
+Recently I'm responsible for an advisor leaderboard service. The leaderboard rank user based on kpi, which is calculated from multiple criteria like asset under management and client retention rate (activity score like number of trade). so we need to normalize these data to calculate kpi score and use redis sorted set to store.
 
 tables: client (advisor_id, current_value), advisor, porfolio (client_id, ), 
 
 AUM = join client with porfolio, select sum(current_value) group by advisor_id
 Retention rate = active_clients / total_clients
+
