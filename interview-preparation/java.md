@@ -1,68 +1,5 @@
 # Java core
 
-### OOP
-
-What's printed ?
-
-```
-class Parent {
-    String name = "Parent";
-
-    public Parent() {
-        printName();
-    }
-
-    public void printName() {
-        System.out.println("1. Name in Parent: " + name);
-    }
-}
-
-class Child extends Parent {
-    String name = "Child";
-
-    public Child() {
-        System.out.println("2. Child Constructor finished");
-    }
-
-    @Override
-    public void printName() {
-        System.out.println("3. Name in Child: " + name);
-    }
-}
-
-
-class ParentExample {
-    public static void main(String[] args) {
-        Parent obj = new Child();
-        System.out.println("4. Reference name: " + obj.name);
-    }
-}
-```
-
-Why Doesn’t This Throw NullPointerException?
-```
-class Demo {
-    static void show(){
-        System.out.println("Hello Java");
-    }
-}
-
-public class Test {
-    public static void main(String[] args){
-        Demo obj = null;
-        obj.show();
-    }
-}
-```
-
-→ Static methods belong to the class, not the object so internally compiler convert to Demo.show()
-
-2 interface have the exaclty similar abstract method, if a class implement these both interface, it can implement 1 method for both
-
-Bonus: If both or 1 of both are default method, must explicitly implement and can optionally use `InterfaceName.super.method()`
-
-2 interface have the same method name cannot have different return type
-
 ## SOLID
 Single responsibility
 - Your class or method should have only one responsibility
@@ -170,31 +107,6 @@ class UserService {
 
 high-level modules shouldn't depend on concrete implementations, instead it should depend on abstractions to reduces coupling
 
-## Data type
-2 primary data types:
-
-8 primitive data type:
-- byte (0)
-- int
-- long
-- short
-- double (0.0d)
-- float (0.0f)
-- boolean: false
-- char
-
-reference data type not store value directly but store memory address where value is stored: class, interface, array, enum
-
-autoboxing is transform primitive type to wrapper class: Integer i = 1
-
-unboxing is transform wrapper class to primitive type: int i = new Integer(1)
-
-both double and float represent decimal number, but double represent more precisely 8 byte, float 4 byte
-
-String vs StringBuffer vs StringBuilder:
-- String is immutable, so when we update content, we are creating a new String object. StringBuilder and StringBuffer are mutable but StringBuffer thread-safe (String is immutable so it's always safe)
-- If we need to update content a lot, StringBuilder is fastest because there is no synchronization cost
-
 ## OOP
 
 OOP is a programming method that's based on 2 important concepts: class and object. Class define attribute and method, and it's a prototype of an object
@@ -264,6 +176,26 @@ access modifier:
 - package-private (default when no access modifier): accessible within class under the same package
 - private: only accessible within that class
 
+## Data type
+2 primary data types:
+
+8 primitive data type:
+- byte (0)
+- int
+- long
+- short
+- double (0.0d)
+- float (0.0f)
+- boolean: false
+- char
+
+reference data type not store value directly but store memory address where value is stored: class, interface, array, enum
+
+autoboxing is transform primitive type to wrapper class: Integer i = 1
+
+unboxing is transform wrapper class to primitive type: int i = new Integer(1)
+
+both double and float represent decimal number, but double represent more precisely 8 byte, float 4 byte
 
 ## Exception
 exception is unexpected behavior that crash program, 3 types:
@@ -324,6 +256,25 @@ Comparable is implement by an object to compare with another object, override me
 
 Comparator is implement to compare 2 object, override method compare(Object o1, Object o2)
 
+## String
+
+String Pool is a special area in heap that stores unique string literals to reduce memory usage by reusing reference for String object with the same content
+
+`intern()` return reference of equal object if exist in the String Pool, otherwise add it
+
+```
+String a = "hi";
+String c = "hi" // Reuse from pool
+String b = new String("hi"); // Always create new object in heap, not reused from pool
+
+System.out.println(a == b); // false
+System.out.println(a == b.intern()); // true
+```
+
+String vs StringBuffer vs StringBuilder:
+- String is immutable, so when we update content, we are creating a new String object. StringBuilder and StringBuffer are mutable but StringBuffer thread-safe (String is immutable so it's always safe)
+- If we need to update content a lot, StringBuilder is fastest because there is no synchronization cost
+
 ## Collection
 Iterator is an interface that provide method to iterate through elements of a Collection like next, hasNext, remove
 
@@ -335,7 +286,7 @@ root interface is Collection and other subinterface with implementation:
 
 Array vs ArrayList:
 - ArrayList can only store object, while Array can store both object and primitive type
-- Array is faster becuase of fix size, ArrayList is slower because maintain dynamic size and complex but useful methods
+- Array is faster because of fixed size, ArrayList is slower because maintain dynamic size and complex methods
 
 LinkedList vs ArrayList:
 - ArrayList access element based on random index faster, but write slower because need to move elements
@@ -361,15 +312,10 @@ how HashMap work:
 HashMap resize when size exceed load factor of capacity, and it downgrade performance because entire map is rebuilt, so every existing key must recalculate hash code to determine new bucket position
 
 ## Serialize
+
 Serialize used to transform object into a format that can save into file, database or pass through network under byte array. Deserialize is vice versa
 
 Mark sensitive field that we dont want to serialize as transient. Miss match version can cause deserialize unsuccessful
-
-## Garbage collection
-
-When init a variable, java allocate memory for it, when there is no more reference to that variable, it can be clean up by garbage collector to release memory. Not immediately, it depend on gc's algorithm and other aspect such as remaining memory in heap, ...
-
-We can custom behavior before clean up by override method finalize. 
 
 ## Reflection
 
@@ -406,7 +352,7 @@ Cannot resuse stream object even not call terminal operation yet, have to recrea
 
 java will allocate resource and run in a seperate thread. If call method `start()` more than once, java throw IllegalThreadStateException. If call method `run()` directly, it will be executed on current thread
 
-Runnable is prefer because it seperate task logic from task execution and compatible with threadpool
+Runnable is prefer because it seperate task definition from task execution and compatible with threadpool
 ```
 CustomRunnable customRunnable = new CustomRunnable();
 Thread thread = new Thread(customRunnable);
@@ -452,15 +398,15 @@ NEW → RUNNABLE → (BLOCKED/WAITING/TIMED_WAITING) → TERMINATED
 - WAITING: Waiting for another thread to perform an action, for example `sleep()`, `wait()`, `join()`
 - TERMINATED: `run()` method finished or thread died due to exception
 
+join() method is used to pause the current thread until the target thread complete. Calling join() on a thread that not started yet will return immediately without waiting
+
+wait() can only be used within a synchronized block and usually pair with notify() for inter-thread communication. When a thread calls obj.wait(), it immediately release monitor lock and suspend execution until another thread calls notify() on the same object
+
 ## Thread-safe type
 
 A thread-safe type is a class or data structure that can be safely used by multiple threads at the same time without causing data problems like race condition
 
-In Java, we achieve thread safety using synchronization, atomic classes, immutable objects, or concurrent collections.
-
-In java.util.concurrent package, Java provides many thread-safe types like concurrent collection, atomic types, Synchronizers like ReentrantLock, Executors. These are preferred over traditional synchronization because they offer better performance
-
-In real systems, I prefer minimizing shared mutable state and using immutable objects or concurrent collections, because locking can become a bottleneck under high traffic
+In Java, we achieve thread safety using synchronization, atomic classes, concurrent collections or immutable objects
 
 ### ConcurrentHashMap
 
@@ -484,7 +430,7 @@ map.put("count", map.get("count") + 1);
 
 This is tradeoff, internally they use Compare-And-Swap and fine-grained locking to avoid global locking, which improve performance but requires developers to use correctly when dealing with compound logic
 
-Compare-And-Swap is a lock-free mechanism where a thread updates a value only if it hasn’t been changed by another thread
+Compare-And-Swap is a lock-free mechanism where a thread updates a value only if it hasn’t been changed by another thread. Internally, it use a do-while loop to compare and set until successful
 
 Fine-grained locking is lock only a small part instead of locking the entire structure
 
@@ -502,7 +448,7 @@ synchronized is built-in, automatically acquires lock when enter block and relea
 
 synchronized uses a monitor lock associated with every object
 
-For instance methods or blocks, it locks the current object, so that obj1.method() and obj2.method() can run at the same time
+For instance methods or blocks, it locks the current object, so that obj1.method() and obj2.method() can run at the same time, while obj.method1() and obj.method2() is not
 
 For static methods or blocks, it locks the Class object, obj1.method() and obj2.method() cannot run concurrently
 
@@ -529,6 +475,24 @@ try {
 ### ConcurrentHashMap vs synchronizedMap
 
 Both are used when multiple threads modify a shared map. synchronizedMap use 1 big lock so only one thread can access at a time, while ConcurrentHashMap does not lock the entire map, instead it lock at bucket level when needed
+
+## JVM
+
+Architecture of jvm and how it works
+
+## Garbage collector
+
+When init a variable, java allocate memory for it, when there is no more reference to that variable, it can be clean up by garbage collector to release memory. Not immediately, it depend on gc's algorithm and other aspect such as remaining memory in heap, ...
+
+Several types: 
+- Serial GC: single-threaded, suitable for small applications
+- Parallel GC: multi-threaded, suitable for high throughput
+
+We can custom behavior before clean up by override method finalize
+
+### Stack vs heap
+
+Both stack and heap are used for memory management during program execution. However, stack stores local variable and method execution, while heap stores objects. Stack does store object but only object reference, while heap store actual object
 
 ## Other
 
@@ -595,6 +559,8 @@ public class MyClass {
 
 Enum is thread-safe
 
+Profiling first, then optimize several aspects by choosing efficient data structures, improving concurrency with multi-thread and introducing caching with proper strategy
+
 ## Scenario Based Interview Questions
 
 ### Basic
@@ -651,6 +617,69 @@ Java maintains a cache of Integer objects from -128 to 127 because small numbers
   }
   ```
 - return
+
+### OOP
+
+What's printed ?
+
+```
+class Parent {
+    String name = "Parent";
+
+    public Parent() {
+        printName();
+    }
+
+    public void printName() {
+        System.out.println("1. Name in Parent: " + name);
+    }
+}
+
+class Child extends Parent {
+    String name = "Child";
+
+    public Child() {
+        System.out.println("2. Child Constructor finished");
+    }
+
+    @Override
+    public void printName() {
+        System.out.println("3. Name in Child: " + name);
+    }
+}
+
+
+class ParentExample {
+    public static void main(String[] args) {
+        Parent obj = new Child();
+        System.out.println("4. Reference name: " + obj.name);
+    }
+}
+```
+
+Why Doesn’t This Throw NullPointerException?
+```
+class Demo {
+    static void show(){
+        System.out.println("Hello Java");
+    }
+}
+
+public class Test {
+    public static void main(String[] args){
+        Demo obj = null;
+        obj.show();
+    }
+}
+```
+
+→ Static methods belong to the class, not the object so internally compiler convert to Demo.show()
+
+2 interface have the exaclty similar abstract method, if a class implement these both interface, it can implement 1 method for both
+
+Bonus: If both or 1 of both are default method, must explicitly implement and can optionally use `InterfaceName.super.method()`
+
+2 interface have the same method name cannot have different return type
 
 ### Stream API
 convert list to map using stream api, if there is key conflict ?

@@ -1,5 +1,17 @@
 # SQL
 
+## ACID
+
+Atomicity: all success or all rollback
+
+Consistency: ensure constraint and rules are never violated
+
+Isolation: different transactions don’t interfere each other
+
+Durability: once committed, data is permanently saved
+
+## Order of execution
+
 from/join
 where
 group by
@@ -8,6 +20,26 @@ select
 distinc
 order by
 limit/offset
+
+## Other
+
+diffence between DDL and DML: DDL (Data definition language) used to define structure of a db with commands like create update table, DML (Data manipulation language) used to manipulate data like insert, update
+
+diffence between union and join: union return 2 data set from 2 table without adding column while join return 1 data set including additional column from many tables
+
+diffence between union and union all: union detect duplicate by comparing both datatype and value of all columns and only return distinct row, while union all return all
+
+diffence between where and having: having can only be used with group by, and can be used with aggregrate funtion like min, max, sum, avg, ...
+
+types of join: inner (default), left, right, full outer, ...
+
+while sql utilize its acid for finance/banking, nosql usually used for:
+- E-commerce Product Catalogs: handles various product attributes, allowing frequent updates without schema downtime
+- Real-time Analytics or Data Logging: store and analyze massive volumes of data
+
+SELECT * is slower because it often prevents the database from using indexes efficiently. For example, if an index that contains all columns needed for the query, it doesn't need to access table data. However with select *, need to go back to table to fetch all columns, which cause extra IO
+
+Optimize multiple subqueries by rewriting the query with join to reduce repeated execution
 
 ## Scenario Based Interview Questions
 
@@ -99,22 +131,3 @@ delete FROM employee WHERE id IN (
 ```
 
 → ROW_NUMBER() assigns a unique, sequential integer to every row, ignoring ties, while DENSE_RANK() assigns the same rank to ties and never leaves gaps in the ranking sequence. RANK() is similar to DENSE_RANK() but create gap ((e.g., 1, 2, 2, 4))
-
-## Other
-bảng tạm bảng dc sinh ra để lưu kết quả tạm trong quá trình thực hiện 1 câu truy vấn
-
-view là bảng ảo dùng để lưu kết quả câu truy vấn
-
-diffence between DDL and DML: DDL (Data definition language) dùng để define cấu trúc của 1 cơ sở dữ liệu như các lệnh create update table, DML (Data manipulation language) dùng để thao tác dữ liệu như insert, update
-
-diffence between union and join: union trả về 2 data set từ 2 table trong khi join trả về 1 data set gồm nhiều column từ nhiều table
-
-diffence between union and union all: union detect duplicate bằng cách so sánh kiểu dữ liệu và content của toàn bộ column và chỉ return distinct trong khi union all trả về toàn bộ
-
-diffence between where and having: having chỉ được dùng khi có group by, và có thể dùng với các aggregrate funtion như min, max, sum, avg, ...
-
-all types of join
-
-while sql utilize its acid for finance/banking, nosql usually used for:
-- E-commerce Product Catalogs: handles various product attributes, allowing frequent updates without schema downtime
-- Real-time Analytics or Data Logging: store and analyze massive volumes of data

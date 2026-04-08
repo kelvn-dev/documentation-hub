@@ -30,6 +30,16 @@ Serivce interaction design with websocket, rabbitmq, postgre and redis sorted se
 - Rolling update: Update each instance until the whole cluster use same new version. This save resource as it does not need to maintain 2 env like Blue-Green. Popular like k8s behavior, update image and k8s will gradually replace old pod with new pod 
 - Others: Canary (release the new version to a small percentage of users first), Recreate (Low complexity but have down time), ...
 
+## Api gateway
+
+Api gateway provide a single entry point for all client requests to route request to corresponding service, so that client dont need to concern about the complexity of multiple service urls
+
+It's also a central place to manage API usage like rate limiting, analytics, and authentication
+
+we use self-developed api gateway so we need to update configuration by manually adding entries to a configuration file that map a path to a backend url. My techlead is responsible for adding this
+
+Under high traffic, we scale api gateway to multiple instances and we have an internal load balancer to distribute request evenly
+
 ## Caching strategy
 
 3 level caching: client, server, db (Frequently queried db results)
@@ -67,6 +77,10 @@ So both message queue and pub-sub are messaging patterns, while a message broker
 Forward proxy is a server that sits between client and the internet, it's typically used to control access to the internet
 
 Reverse proxy is a server that sits between client and origin server
+
+## Shared-database vs database-per-service
+
+Shared database is simple to implement and provide strong consistency but it's hard to scale independently because there is tight coupling between services, so it's only suitable for early-stage migration to microservices. While database-per-service can scale independently, for example, service A can use nosql to serve read-heavy system and service B can use sql to serve critical processing
 
 ## Partitioning vs sharding
 
@@ -194,3 +208,10 @@ So for frequent release and continuous feedback, choose agile. For fixed require
 ## Other
 
 POST send 2 requests because browser send preflight OPTION request before the actual request to confirm whether the intended request is permitted
+
+Currency should be stored as integer in smallest unit to avoid floating-point precision issues. For example, 1.2 dollar should be store as 120 cent. If we truly need fraction, use decimal with fixed precision to avoid rounding errors. we should always store amount with currency code
+
+For currency conversion, i would use a base currency to normalize all values, fetch exchange rates from a reliable source, cache them and calculate target amount by multiple original amount with rate. I also apply best practice like using BigDecimal to avoid precision issues, apply common rounding rules such as HALF_UP for financial systems and HALF_EVEN for banking
+
+HALF_UP: if a value is exactly or larger midpoint (>= .5), it always rounds up. Ex: 3.125 -> 3.13
+HALF_EVEN: similar HALF_UP but round to the nearest even number. Ex: 3.125 -> 3.12

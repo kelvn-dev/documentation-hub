@@ -242,6 +242,8 @@ Built-in: @EnableScheduling and @Scheduled with cron expression or fixed delay a
 
 Quartz: Define task bằng cách tạo 1 class implement Quartz Job và Override method execute, khi muốn schedule task này thì tạo JobDetail và Trigger. Quartz quản lý job bằng cách lưu vào memory hoặc db -> set JDBC trong application.yml. Quarzt hỗ trợ tự động tạo table bằng cách set initialize-schema always nhưng có nhược điểm là mỗi lần restart server sẽ drop và recreate table nên mất hết các data -> Tạo file sql create table if not exist và config quartz point tới file này
 
+## Spring batch
+
 ## internationalization and localization
 
 - Define message properties files for different locales, such as messages_en.properties for English, messages_fr.properties for French. Ex: Put messages_en.properties at src/main/resources/i18n
