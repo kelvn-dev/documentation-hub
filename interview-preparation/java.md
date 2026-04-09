@@ -275,6 +275,16 @@ String vs StringBuffer vs StringBuilder:
 - String is immutable, so when we update content, we are creating a new String object. StringBuilder and StringBuffer are mutable but StringBuffer thread-safe (String is immutable so it's always safe)
 - If we need to update content a lot, StringBuilder is fastest because there is no synchronization cost
 
+## BigDecimal
+
+float and double are actually approximate, which can produce precision error like double 0.1 + 0.2 = 0.30000000000000004 != 0.3
+
+Always init with string new BigDecimal("0.1"), if need to use double, use BigDecimal.valueOf(0.2) for safe
+
+Use compareTo() for comparison and other util function like negate(), add(), subtract(), ...
+
+Internally, BigDecimal uses two primary components, Unscaled value which is BigInteger that represent the significant digits and scale represents the number of digits to the right of the decimal point. For example, 1.1 is stored as 11 for unscaled and 2 for scale 
+
 ## Collection
 Iterator is an interface that provide method to iterate through elements of a Collection like next, hasNext, remove
 
