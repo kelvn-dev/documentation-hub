@@ -102,6 +102,13 @@ For IO task like db call or api call, number of thread can larger than number of
 
 blocking I/O means your code is waiting for an external event to complete before it can proceed
 
+## Memory leak
+
+memory leak is a scenario that happens when objects are no longer needed but are still referenced, so the garbage collector cannot discard them to release memory. For example:
+
+- Use a static collection as cache that keep growing without eviction. Fix by using bounded cache, for example use LinkedHashMap instead of HashMap, which support method removeEldestEntry
+- Forget to clear ThreadLocal, always remember to call method clear() in finally block
+
 ## Memory profiling
 
 Memory profiling is analyzing heap usage, object allocation, and garbage collection behavior to detect memory leaks and performance issues. In springboot, we can use tools like Java Flight Recorder or Actuator metrics to monitor JVM memory
