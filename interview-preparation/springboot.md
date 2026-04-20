@@ -334,7 +334,15 @@ await().atMost(5, TimeUnit.SECONDS).until(() -> conditionIsTrue());
 
 integration test is testing interaction between components like a restapi endpoint. Choice between local/dev db and TestContainer is a tradfe off. dev db is not isolated, local db may have different timezone config and both require manual cleanup. While TestContainer guarantee similarity, isolation and no munual cleanup but it's slightly slower and may need to setup data
 
-Even in integration tests, don’t call real external APIs, replace them with fake HTTP server or Testcontainers
+### Testing inside CI environment
+
+Consider a project of multiple microservices, some depending on 2 or 3 other services.
+
+spin up the virtual service on-demand only when a test starts and destroy it immediately after. This approach ensure clean state and cost-effective because we only pay for computing resources during the minutes tests are running
+
+For 3rd-party APIs we don't control, package virtual services like a WireMock configuration as a Docker container. This only simulate the chaos of a real network like latency or 503 error but not simulate real interaction. That's why we should have an end-to-end test which runs immediately after service is deployed to the development environment to verify real interaction
+
+For internal service, spin up the actual Docker image of the dependency to verify real interaction but this is heavy
 
 ## Other
 

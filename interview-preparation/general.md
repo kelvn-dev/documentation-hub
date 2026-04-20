@@ -2,7 +2,17 @@
 
 ## Introduction
 
-Hi, my name is Khanh. I have about 3 year experience working as a backend developer. I start going to work when i was only fresher student to apply knowledge into real-world project. That explain why i have such experience at a very soon time. For previous jobs, i had to communicate with foreign co-worker in english so i believe that my english capacity can match your requirement. Regarding technical skill, I mainly work with the backend, writing resttful api with modern technique like caching, message broker, integrating 3th party. I’m also familiar with devops concepts and tools such as cicd pipeline, github action, containerization with docker and container orchetration with kubernete. For operating system, i can use mac and any kind of linux distro pretty good. Maybe in the future, i want to deep dive more about devop engineer if i had a chance
+### Technical version
+
+Hi, my name is Khanh. I have about 3 year experience working as a backend developer. For previous jobs, i had to communicate with foreign co-worker in english so i believe that my english capacity can match your requirement. Regarding technical skill, I mainly work with the backend, writing resttful api with modern technique like caching, message broker, integrating 3th party. I’m also familiar with devops concepts and tools such as cicd pipeline, github action, containerization with docker and container orchetration with kubernete. For operating system, i can use mac and any kind of linux distro pretty good. Maybe in the future, i want to deep dive more about devop engineer if i had a chance
+
+### Culture-fit version
+
+Hi everyone, my name is Khanh, i'm a software engineer. I started going to work when i was only fresher student to apply knowledge into real-world project because I wanted to get real experience early instead of just learning theory
+
+As you can see, i really enjoy working with tech. I usually stay late working or just research technical stuff not because I have to, but because I’m curious and always feel excited whenever i understand something deeply
+
+I’m looking for a team where I can contribute, keep growing up and especially stay for long-term
 
 To improve myself, i usually do leetcode problem to maintain problem-solving skill, follow the Algomaster website to pracice problems organized by patterns. I also love reading medium blog because i find that writer usually share hidden gems and whenever i discover new topics, i always try to built it by myself. For example the last thing that i build is a complete ci/cd pipeline with gitops and a purchased cloud cluster
 
