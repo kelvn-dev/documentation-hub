@@ -57,9 +57,21 @@ wealth management is a digital platform that not only supports individual adviso
 
 Currently, i'm responsible for porfolio service
 
-Recently I'm responsible for an advisor leaderboard service. The leaderboard rank user based on kpi, which is calculated from multiple criteria like asset under management and client retention rate (activity score like number of trade). so we need to normalize these data to calculate kpi score and use redis sorted set to store.
+Product attached to portfolio instead of client directly to map assets to particular goals like high-risk or low-risk investment, for example product with high stability like insurance should be attached to low-risk portfolio, while stock or gold should be attached to high-risk portfolio. This make performance tracking for a specific goal easier
 
-tables: client (advisor_id, current_value), advisor, porfolio (client_id, ), 
+table:
+- client: advisor_id
+- advisor
+- portfolio: client_id, total_balance
+- product: portfolio_id, name (pension, insurance, ...), balance
+- investment: product_id, name (gold, stock, ...), strategy (must be 100% in sum)
+
+client - advisor (1 - 1)
+client - portfolio (1 - n)
+portfolio - product (1 - n)
+product - investment (1 - n)
+
+Recently I'm responsible for an advisor leaderboard service. The leaderboard rank user based on kpi, which is calculated from multiple criteria like asset under management and client retention rate (activity score like number of trade). so we need to normalize these data to calculate kpi score and use redis sorted set to store.
 
 AUM = join client with porfolio, select sum(current_value) group by advisor_id
 Retention rate = active_clients / total_clients
