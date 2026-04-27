@@ -189,11 +189,11 @@ DEFAULT: Use the isolation level used by the database itself, for example MySQL 
 
 READ_UNCOMMITTED: transaction can read the data of another uncommitted transaction
 
-READ_COMMITTED: transaction cannot read data until another transaction is committed
+READ_COMMITTED: transaction can only read data that has been committed
 
-REPEATABLE_READ: when transaction is opened, modification operations are no longer allowed.
+REPEATABLE_READ: guarantee if a transaction reads a row multiple times, it always get the same result even if other transactions commit changes to that row. The implementation depend on db. For mvcc-based used by postgre, transaction sees a snapshot of data at start time. For lock-based, some db may use shared lock to avoid modification but it reduce concurrency
 
-SERIALIZABLE: the highest isolation level. Under this level, transactions are executed sequentially
+SERIALIZABLE: the highest isolation level. Under this level, result of concurrent transactions is exactly the same as if they are executed sequentially. For mvcc-based, transactions read from snapshots without blocking but will track who read and write what to detect dangerous pattern to abort transaction. For lock-based, db use exclusive lock and range lock to prevent inserts.
 
 ```
 +----------------+------------+---------------------+--------------+
@@ -205,6 +205,8 @@ SERIALIZABLE: the highest isolation level. Under this level, transactions are ex
 |Serializable    | √          |   √                 |  √           |
 +----------------+------------+---------------------+--------------+
 ```
+
+Isolation is for transaction level, while lock for row level. Depending on the database, isolation levels can be implemented using locks, MVCC, or a combination of both
 
 ### Lock
 
