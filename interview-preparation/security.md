@@ -8,6 +8,10 @@ Note: OAuth 2.0 is an authorization protocol and NOT an authentication protocol 
 
 After login successfully with provider like gg, redirect to a callback url with access token or authorization code to exhange for access token and optionally refresh token. Token can be of any format but mostly jwt. Then client can use this access token to call api to get data, for example google grant user:read permission and client can call gg api to get user details
 
+### PCKE (Proof Key for Code Exchange)
+
+PKCE is an extension of oauth2 flow to guarantee that even attacker steal authorization code by intercepting, they cannot exchange it for access token. Relying application introduces a secret called the Code Verifier and create a transform value of the Code Verifier called the Code Challenge. When request authorization code, code challenge is sent together and authorization server keep this. When exchange authorization code for access token, code verifier need to be sent and authorization will verify it by code challenge before responsding access token. Attacker dont have code verifier
+
 ## OIDC
 
 Is authentication protocol that works on top of the OAuth 2.0 framework, allow to log in to multiple applications with a single set of credentials, this process is also known as single sign-on
